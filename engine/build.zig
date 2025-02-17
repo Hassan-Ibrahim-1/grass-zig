@@ -99,6 +99,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{"-g"},
     });
     exe_check.root_module.addIncludePath(b.path("dependencies"));
+    exe_check.root_module.linkLibrary(cimgui_dep.artifact("cimgui"));
     const check = b.step("check", "Check if foo compiles");
     check.dependOn(&exe_check.step);
 }
