@@ -38,6 +38,10 @@
             .url = "https://pkg.machengine.org/mach-freetype/d63efa5534c17f3a12ed3d327e0ad42a64adc20a.tar.gz",
             .hash = "1220adfccce3dbc4e4fa8650fdaec110a676f6b8a1462ed6ef422815207f8288e9d2",
         },
+        .@"cimgui.zig" = .{
+            .url = "git+https://github.com/tiawl/cimgui.zig#896be9fbf7300343d94caca8241fce438ce117e3",
+            .hash = "1220bdc23fe238cf6a6d1cca3e3e66f454f3e811b8f59c1e890cb6d898b2f56e2f10",
+        },
     },
     .paths = .{
         "build.zig",

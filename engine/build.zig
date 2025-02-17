@@ -1,4 +1,5 @@
 const std = @import("std");
+const cimgui = @import("cimgui.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -37,6 +38,16 @@ pub fn build(b: *std.Build) void {
         .flags = &.{"-g"},
     });
     engine.addIncludePath(b.path("dependencies"));
+
+    const cimgui_dep = b.dependency("cimgui.zig", .{
+        .target = target,
+        .optimize = optimize,
+        .platform = cimgui.Platform.GLFW,
+        .renderer = cimgui.Renderer.OpenGL3,
+    });
+
+    // Where `exe` represents your executable/library to link to
+    engine.linkLibrary(cimgui_dep.artifact("cimgui"));
 
     // gl
     const gl_bindings = @import("zigglgen").generateBindingsModule(b, .{

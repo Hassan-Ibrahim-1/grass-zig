@@ -31,6 +31,12 @@ pub const Model = @import("Model.zig");
 pub const Scene = @import("Scene.zig");
 pub const Skybox = @import("Skybox.zig");
 
+const c = @cImport({
+    @cInclude("dcimgui.h");
+    @cInclude("backends/dcimgui_impl_glfw.h");
+    @cInclude("backends/dcimgui_impl_opengl3.h");
+});
+
 const Fs = @import("Fs.zig");
 /// use this to get access to engine resources
 pub const fs = Fs.init(&.{
@@ -75,6 +81,7 @@ const State = struct {
     shaders: ArrayList(*Shader),
     cursor_enabled: bool = false,
     scene: Scene,
+    imio: *c.ImGuiIO_t,
 };
 
 var state: State = undefined;
@@ -85,6 +92,7 @@ pub fn init(init_info: *const EngineInitInfo) !void {
     initCamera();
     state.shaders = ArrayList(*Shader).init(state.allocator);
     initScene();
+    initImGui();
 
     input.init(state.allocator);
     try text.init(state.allocator);
@@ -106,6 +114,7 @@ pub fn deinit() void {
     cl_renderer.deinit();
     renderer.deinit();
     state.shaders.deinit();
+    deinitImGui();
 
     // deinit window after everything that requires opengl
     state.window.deinit();
@@ -205,6 +214,8 @@ fn update() void {
         };
 
         renderer.render();
+
+        imGuiUpdate();
 
         debug.checkGlError();
     }
@@ -327,6 +338,41 @@ fn initCamera() void {
 fn initScene() void {
     state.scene = Scene.init(state.allocator);
     state.scene.loadDefaultSkybox();
+}
+
+fn initImGui() void {
+    log.info("loading imgui", .{});
+    _ = c.CIMGUI_CHECKVERSION();
+    _ = c.ImGui_CreateContext(null);
+
+    state.imio = @ptrCast(c.ImGui_GetIO());
+    state.imio.ConfigFlags = c.ImGuiConfigFlags_NavEnableKeyboard;
+
+    c.ImGui_StyleColorsDark(null);
+
+    _ = c.cImGui_ImplGlfw_InitForOpenGL(@ptrCast(state.window.glfw_window.handle), true);
+
+    const glsl_version = "#version 410";
+    _ = c.cImGui_ImplOpenGL3_InitEx(glsl_version);
+}
+
+fn imGuiUpdate() void {
+    if (state.cursor_enabled) {
+        c.cImGui_ImplOpenGL3_NewFrame();
+        c.cImGui_ImplGlfw_NewFrame();
+        c.ImGui_NewFrame();
+
+        c.ImGui_ShowDemoWindow(null);
+
+        c.ImGui_Render();
+        c.cImGui_ImplOpenGL3_RenderDrawData(c.ImGui_GetDrawData());
+    }
+}
+
+fn deinitImGui() void {
+    c.cImGui_ImplOpenGL3_Shutdown();
+    c.cImGui_ImplGlfw_Shutdown();
+    c.ImGui_DestroyContext(null);
 }
 
 fn enableWireframe() void {
