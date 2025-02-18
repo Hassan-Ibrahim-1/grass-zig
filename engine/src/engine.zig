@@ -371,6 +371,9 @@ fn imGuiUpdate() void {
 
         ig.ImGui_ShowDemoWindow(null);
 
+        _ = ig.ImGui_Begin("hey", null, 0);
+        ig.ImGui_End();
+
         ig.ImGui_Render();
         ig.cImGui_ImplOpenGL3_RenderDrawData(ig.ImGui_GetDrawData());
     }
@@ -380,6 +383,10 @@ fn deinitImGui() void {
     ig.cImGui_ImplOpenGL3_Shutdown();
     ig.cImGui_ImplGlfw_Shutdown();
     ig.ImGui_DestroyContext(null);
+}
+
+pub fn imGuiIo() *ig.ImGuiIO_t {
+    return state.imio;
 }
 
 fn enableWireframe() void {

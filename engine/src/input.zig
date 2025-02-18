@@ -11,6 +11,7 @@ const Window = engine.Window;
 const Transform = @import("Transform.zig");
 const Camera = @import("Camera.zig");
 const glfw = engine.glfw;
+const ig = engine.ig;
 
 const start_key_index: u32 = @intFromEnum(Key.space);
 const max_keys: u32 = @as(u32, Key.last()) + 1;
@@ -212,11 +213,13 @@ var user_key_callbacks: std.ArrayList(KeyCallbackFn) = undefined;
 var camera: *Camera = undefined;
 
 var window: *Window = undefined;
+var imio: *ig.ImGuiIO_t = undefined;
 
 pub fn init(allocator: Allocator) void {
     alloc = allocator;
     user_key_callbacks = std.ArrayList(KeyCallbackFn).init(alloc);
     window = engine.window();
+    imio = engine.imGuiIo();
 
     camera = engine.camera();
     setCallbacks();
@@ -243,6 +246,8 @@ pub fn startFrame() void {
     updateKeys();
 
     const dt = engine.deltaTime();
+
+    if (imio.WantTextInput) return;
 
     if (window.getKey(.w) == .press) {
         camera.processKeyboard(.forward, dt);
@@ -351,7 +356,12 @@ fn updateKeys() void {
 
         // weird hack. had to modify mach-glfw to make the c functions accessible
         // window.getKey(@enumFromtInt(i)) wasn't working
-        const action = Action.fromCint(glfw.glfwGetKey(window.glfw_window, @intCast(i)));
+        const action = Action.fromCint(
+            glfw.glfwGetKey(
+                window.glfw_window,
+                @intCast(i),
+            ),
+        );
         const down = action == .press;
         if (!key_down[i] and down) {
             key_pressed[i] = true;
@@ -369,15 +379,22 @@ fn keyCallback(
     c_action: c_int,
     c_mods: c_int,
 ) callconv(.C) void {
-    _ = win; // autofix
-    _ = c_scancode; // autofix
-    _ = c_mods; // autofix
+    //
+    ig.cImGui_ImplGlfw_KeyCallback(
+        @ptrCast(win),
+        c_key,
+        c_scancode,
+        c_action,
+        c_mods,
+    );
 
     const key = Key.fromCint(c_key);
     const action = Action.fromCint(c_action);
     if ((key == .escape) and action == .press) {
         window.setShouldClose(true);
     }
+
+    if (imio.WantTextInput) return;
 
     for (user_key_callbacks.items) |callback| {
         const key_action: Action = value: {
@@ -404,6 +421,7 @@ fn mouseMovementCallback(
     posx: f64,
     posy: f64,
 ) callconv(.C) void {
+    ig.cImGui_ImplGlfw_CursorPosCallback(@ptrCast(win), posx, posy);
     var width: c_int = 0;
     var height: c_int = 0;
     glfw.glfwGetWindowSize(win.?, &width, &height);
@@ -443,7 +461,7 @@ fn mouseScrollCallback(
     xoffset: f64,
     yoffset: f64,
 ) callconv(.C) void {
-    _ = win;
+    ig.cImGui_ImplGlfw_ScrollCallback(@ptrCast(win), xoffset, yoffset);
     scroll_delta = Vec2.init(
         @floatCast(xoffset),
         @floatCast(yoffset),
@@ -457,8 +475,15 @@ fn mouseButtonCallback(
     c_action: c_int,
     mods: c_int,
 ) callconv(.C) void {
-    _ = win;
-    _ = mods;
+    ig.cImGui_ImplGlfw_MouseButtonCallback(
+        @ptrCast(win),
+        c_button,
+        c_action,
+        mods,
+    );
+
+    if (imio.WantCaptureMouse) return;
+
     const button = MouseButton.fromCint(c_button);
     const action = Action.fromCint(c_action);
     if (button == .left) {
