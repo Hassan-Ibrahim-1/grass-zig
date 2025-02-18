@@ -201,27 +201,25 @@ pub fn addShader(shader: *Shader) void {
 }
 
 fn update() void {
-    while (!state.window.shouldClose()) {
-        startFrame();
-        defer endFrame();
+    startFrame();
+    defer endFrame();
 
-        state.app.update() catch @panic("user update failed");
+    state.app.update() catch @panic("user update failed");
 
-        text.renderText(
-            "the brown fox jumps\n over the lazy dog",
-            Vec2.init(45.0, 100.0),
-            1.0,
-            Color.init(127, 121, 221),
-        ) catch |err| {
-            log.err("failed to render text: {s}", err);
-        };
+    text.renderText(
+        "the brown fox jumps\n over the lazy dog",
+        Vec2.init(45.0, 100.0),
+        1.0,
+        Color.init(127, 121, 221),
+    ) catch |err| {
+        log.err("failed to render text: {s}", err);
+    };
 
-        renderer.render();
+    renderer.render();
 
-        imGuiUpdate();
+    imGuiUpdate();
 
-        debug.checkGlError();
-    }
+    debug.checkGlError();
 }
 
 fn createLayout() void {
@@ -304,7 +302,9 @@ fn sidebarItemComponent(index: u32) void {
 pub fn run(user_app: *const Application) void {
     state.app = user_app;
     state.app.init() catch @panic("Init failed");
-    update();
+    while (!state.window.shouldClose()) {
+        update();
+    }
 }
 
 fn initAllocator() void {
