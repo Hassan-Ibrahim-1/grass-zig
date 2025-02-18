@@ -13,14 +13,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // Use mach-glfw
-    const glfw_dep = b.dependency("glfw", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    const glfw_module = glfw_dep.module("mach-glfw");
-    engine.addImport("glfw", glfw_module);
-
     const ft_dep = b.dependency("mach_freetype", .{
         .target = target,
         .optimize = optimize,
@@ -48,6 +40,10 @@ pub fn build(b: *std.Build) void {
 
     // Where `exe` represents your executable/library to link to
     engine.linkLibrary(cimgui_dep.artifact("cimgui"));
+    engine.addLibraryPath(b.path("dependencies/glfw/lib/"));
+    engine.linkSystemLibrary("glfw", .{});
+    // engine.addLibraryPath(b.path("dependencies/glfw/lib"));
+    // engine.linkLibrary()
 
     // gl
     const gl_bindings = @import("zigglgen").generateBindingsModule(b, .{
@@ -75,7 +71,6 @@ pub fn build(b: *std.Build) void {
     });
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-    exe_unit_tests.root_module.addImport("glfw", glfw_module);
     exe_unit_tests.root_module.addImport("gl", gl_bindings);
     exe_unit_tests.root_module.addImport("freetype", ft_mod);
     exe_unit_tests.root_module.addImport("clay", clay_module);
@@ -90,7 +85,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     // is there a better way to do this?
-    exe_check.root_module.addImport("glfw", glfw_module);
     exe_check.root_module.addImport("gl", gl_bindings);
     exe_check.root_module.addImport("freetype", ft_mod);
     exe_check.root_module.addImport("clay", clay_module);

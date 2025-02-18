@@ -2,30 +2,187 @@ const std = @import("std");
 const log = @import("log.zig");
 const engine = @import("engine.zig");
 const math = @import("math.zig");
-const glfw = @import("glfw");
 const Vec2 = math.Vec2;
 const Vec3 = math.Vec3;
 const Vec4 = math.Vec4;
 const Mat4 = math.Mat4;
 const Allocator = std.mem.Allocator;
+const Window = engine.Window;
 const Transform = @import("Transform.zig");
 const Camera = @import("Camera.zig");
+const glfw = engine.glfw;
 
-const start_key_index: u32 = @intFromEnum(glfw.Key.space);
-const max_keys: u32 = @as(u32, @intFromEnum(glfw.Key.last())) + 1;
+const start_key_index: u32 = @intFromEnum(Key.space);
+const max_keys: u32 = @as(u32, Key.last()) + 1;
 
-const KeyCallbackFn = *const fn (key: Key, action: KeyAction) void;
+const KeyCallbackFn = *const fn (key: Key, action: Action) void;
 
-pub const Key = glfw.Key;
-pub const KeyAction = enum {
-    press,
-    release,
+pub const Key = enum(i32) {
+    invalid = 0,
+    space = 32,
+    apostrophe = 39,
+    comma = 44,
+    minus = 45,
+    period = 46,
+    slash = 47,
+    zero = 48,
+    one = 49,
+    two = 50,
+    three = 51,
+    four = 52,
+    five = 53,
+    six = 54,
+    seven = 55,
+    eight = 56,
+    nine = 57,
+    semicolon = 59,
+    equal = 61,
+    a = 65,
+    b = 66,
+    c = 67,
+    d = 68,
+    e = 69,
+    f = 70,
+    g = 71,
+    h = 72,
+    i = 73,
+    j = 74,
+    k = 75,
+    l = 76,
+    m = 77,
+    n = 78,
+    o = 79,
+    p = 80,
+    q = 81,
+    r = 82,
+    s = 83,
+    t = 84,
+    u = 85,
+    v = 86,
+    w = 87,
+    x = 88,
+    y = 89,
+    z = 90,
+    left_bracket = 91,
+    backslash = 92,
+    right_bracket = 93,
+    grave_accent = 96,
+    world_1 = 161,
+    world_2 = 162,
+    escape = 256,
+    enter = 257,
+    tab = 258,
+    backspace = 259,
+    insert = 260,
+    delete = 261,
+    right = 262,
+    left = 263,
+    down = 264,
+    up = 265,
+    page_up = 266,
+    page_down = 267,
+    home = 268,
+    end = 269,
+    caps_lock = 280,
+    scroll_lock = 281,
+    num_lock = 282,
+    print_screen = 283,
+    pause = 284,
+    f1 = 290,
+    f2 = 291,
+    f3 = 292,
+    f4 = 293,
+    f5 = 294,
+    f6 = 295,
+    f7 = 296,
+    f8 = 297,
+    f9 = 298,
+    f10 = 299,
+    f11 = 300,
+    f12 = 301,
+    f13 = 302,
+    f14 = 303,
+    f15 = 304,
+    f16 = 305,
+    f17 = 306,
+    f18 = 307,
+    f19 = 308,
+    f20 = 309,
+    f21 = 310,
+    f22 = 311,
+    f23 = 312,
+    f24 = 313,
+    f25 = 314,
+    kp_0 = 320,
+    kp_1 = 321,
+    kp_2 = 322,
+    kp_3 = 323,
+    kp_4 = 324,
+    kp_5 = 325,
+    kp_6 = 326,
+    kp_7 = 327,
+    kp_8 = 328,
+    kp_9 = 329,
+    kp_decimal = 330,
+    kp_divide = 331,
+    kp_multiply = 332,
+    kp_subtract = 333,
+    kp_add = 334,
+    kp_enter = 335,
+    kp_equal = 336,
+    left_shift = 340,
+    left_control = 341,
+    left_alt = 342,
+    left_super = 343,
+    right_shift = 344,
+    right_control = 345,
+    right_alt = 346,
+    right_super = 347,
+    menu = 348,
+
+    pub fn last() i32 {
+        return @intFromEnum(Key.menu);
+    }
+
+    pub fn toCint(self: Key) c_int {
+        return @intFromEnum(self);
+    }
+
+    pub fn fromCint(k: c_int) Key {
+        return @enumFromInt(k);
+    }
 };
 
-pub const MouseButton = enum {
-    any,
-    right,
-    left,
+pub const Action = enum(i32) {
+    unknown = -1,
+    release = 0,
+    press = 1,
+    repeat = 2,
+
+    pub fn toCint(self: Action) c_int {
+        return @intFromEnum(self);
+    }
+
+    pub fn fromCint(k: c_int) Action {
+        return @enumFromInt(k);
+    }
+};
+
+// TODO: add support for other mouse buttons that glfw supports
+pub const MouseButton = enum(i32) {
+    any = -1,
+    right = 0,
+    left = 1,
+    middle = 2,
+    last = 7,
+
+    pub fn toCint(self: MouseButton) c_int {
+        return @intFromEnum(self);
+    }
+
+    pub fn fromCint(k: c_int) MouseButton {
+        return @enumFromInt(k);
+    }
 };
 
 var alloc: Allocator = undefined;
@@ -53,14 +210,15 @@ var key_down = [_]bool{false} ** max_keys;
 var user_key_callbacks: std.ArrayList(KeyCallbackFn) = undefined;
 
 var camera: *Camera = undefined;
-var window: glfw.Window = undefined;
+
+var window: *Window = undefined;
 
 pub fn init(allocator: Allocator) void {
     alloc = allocator;
     user_key_callbacks = std.ArrayList(KeyCallbackFn).init(alloc);
+    window = engine.window();
 
     camera = engine.camera();
-    window = engine.window().glfw_window;
     setCallbacks();
 
     // keys appear to be set to true initially?
@@ -73,14 +231,15 @@ pub fn deinit() void {
 }
 
 fn setCallbacks() void {
-    window.setKeyCallback(keyCallback);
-    window.setCursorPosCallback(mouseMovementCallback);
-    window.setScrollCallback(mouseScrollCallback);
-    window.setMouseButtonCallback(mouseButtonCallback);
+    const win = window.glfw_window;
+    _ = glfw.glfwSetKeyCallback(win, keyCallback);
+    _ = glfw.glfwSetCursorPosCallback(win, mouseMovementCallback);
+    _ = glfw.glfwSetScrollCallback(win, mouseScrollCallback);
+    _ = glfw.glfwSetMouseButtonCallback(win, mouseButtonCallback);
 }
 
 pub fn startFrame() void {
-    glfw.pollEvents();
+    glfw.glfwPollEvents();
     updateKeys();
 
     const dt = engine.deltaTime();
@@ -192,8 +351,8 @@ fn updateKeys() void {
 
         // weird hack. had to modify mach-glfw to make the c functions accessible
         // window.getKey(@enumFromtInt(i)) wasn't working
-        const key: glfw.Action = @enumFromInt(glfw.c.glfwGetKey(window.handle, @intCast(i)));
-        const down = key == .press;
+        const action = Action.fromCint(glfw.glfwGetKey(window.glfw_window, @intCast(i)));
+        const down = action == .press;
         if (!key_down[i] and down) {
             key_pressed[i] = true;
         } else if (key_down[i] and !down) {
@@ -204,21 +363,24 @@ fn updateKeys() void {
 }
 
 fn keyCallback(
-    win: glfw.Window,
-    key: glfw.Key,
-    scancode: i32,
-    action: glfw.Action,
-    mods: glfw.Mods,
-) void {
-    _ = mods;
-    _ = scancode;
+    win: ?*glfw.GLFWwindow,
+    c_key: c_int,
+    c_scancode: c_int,
+    c_action: c_int,
+    c_mods: c_int,
+) callconv(.C) void {
+    _ = win; // autofix
+    _ = c_scancode; // autofix
+    _ = c_mods; // autofix
 
+    const key = Key.fromCint(c_key);
+    const action = Action.fromCint(c_action);
     if ((key == .escape) and action == .press) {
-        win.setShouldClose(true);
+        window.setShouldClose(true);
     }
 
     for (user_key_callbacks.items) |callback| {
-        const key_action: KeyAction = value: {
+        const key_action: Action = value: {
             if (keyPressed(key)) break :value .press;
             if (keyReleased(key)) break :value .release;
             unreachable;
@@ -238,16 +400,18 @@ fn keyCallback(
 }
 
 fn mouseMovementCallback(
-    win: glfw.Window,
+    win: ?*glfw.GLFWwindow,
     posx: f64,
     posy: f64,
-) void {
-    const size = win.getSize();
+) callconv(.C) void {
+    var width: c_int = 0;
+    var height: c_int = 0;
+    glfw.glfwGetWindowSize(win.?, &width, &height);
     const viewport = Vec4.init(
         0,
         0,
-        @floatFromInt(size.width),
-        @floatFromInt(size.height),
+        @floatFromInt(width),
+        @floatFromInt(height),
     );
     const w = Vec3.init(@floatCast(posx), @floatCast(posy), 0);
     const real_pos = math.unProject(
@@ -275,10 +439,10 @@ fn mouseMovementCallback(
 }
 
 fn mouseScrollCallback(
-    win: glfw.Window,
+    win: ?*glfw.GLFWwindow,
     xoffset: f64,
     yoffset: f64,
-) void {
+) callconv(.C) void {
     _ = win;
     scroll_delta = Vec2.init(
         @floatCast(xoffset),
@@ -287,9 +451,16 @@ fn mouseScrollCallback(
     camera.processMouseScroll(@floatCast(yoffset));
 }
 
-fn mouseButtonCallback(win: glfw.Window, button: glfw.MouseButton, action: glfw.Action, mods: glfw.Mods) void {
+fn mouseButtonCallback(
+    win: ?*glfw.GLFWwindow,
+    c_button: c_int,
+    c_action: c_int,
+    mods: c_int,
+) callconv(.C) void {
     _ = win;
     _ = mods;
+    const button = MouseButton.fromCint(c_button);
+    const action = Action.fromCint(c_action);
     if (button == .left) {
         if (action == .press) {
             lmb_down = true;

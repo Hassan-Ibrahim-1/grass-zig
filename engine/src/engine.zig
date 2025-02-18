@@ -4,7 +4,6 @@ pub const Transform = @import("Transform.zig");
 pub const Camera = @import("Camera.zig");
 pub const Color = @import("Color.zig");
 pub const debug = @import("debug.zig");
-pub const glfw = @import("glfw");
 pub const gl = @import("gl");
 pub const math = @import("math.zig");
 pub const utils = @import("utils.zig");
@@ -31,9 +30,11 @@ pub const Model = @import("Model.zig");
 pub const Scene = @import("Scene.zig");
 pub const Skybox = @import("Skybox.zig");
 
-const c = @cImport({
+pub const glfw = @cImport({
     @cDefine("GLFW_INCLUDE_NONE", "1");
     @cInclude("GLFW/glfw3.h");
+});
+pub const ig = @cImport({
     @cInclude("dcimgui.h");
     @cInclude("backends/dcimgui_impl_glfw.h");
     @cInclude("backends/dcimgui_impl_opengl3.h");
@@ -83,7 +84,7 @@ const State = struct {
     shaders: ArrayList(*Shader),
     cursor_enabled: bool = false,
     scene: Scene,
-    imio: *c.ImGuiIO_t,
+    imio: *ig.ImGuiIO_t,
 };
 
 var state: State = undefined;
@@ -121,7 +122,7 @@ pub fn deinit() void {
     // deinit window after everything that requires opengl
     state.window.deinit();
     state.scene.deinit();
-    glfw.terminate();
+    glfw.glfwTerminate();
     std.debug.assert(state.gpa.deinit() == .ok);
 }
 
@@ -166,7 +167,7 @@ pub fn wireframeEnabled() bool {
 }
 
 fn updateDeltaTime() void {
-    const current_frame: f32 = @floatCast(glfw.getTime());
+    const current_frame: f32 = @floatCast(glfw.glfwGetTime());
     state.delta_time = current_frame - state.last_frame_time;
     state.last_frame_time = current_frame;
 }
@@ -312,15 +313,19 @@ fn initAllocator() void {
 }
 
 fn glfwCallback(
-    err: glfw.ErrorCode,
-    desc: [:0]const u8,
-) void {
-    log.info("GLFW error: {s} - {s}", .{ @errorName(err), desc });
+    code: c_int,
+    desc: [*c]const u8,
+) callconv(.C) void {
+    log.info("GLFW error: {} - {s}", .{ code, desc });
 }
 
 fn initWindow(init_info: *const EngineInitInfo) !void {
-    if (!glfw.init(.{})) return error.GlfwInitfailed;
-    glfw.swapInterval(0);
+    if (glfw.glfwInit() == 0) return error.GlfwInitfailed;
+    glfw.glfwWindowHint(glfw.GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfw.glfwWindowHint(glfw.GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfw.glfwWindowHint(glfw.GLFW_OPENGL_PROFILE, glfw.GLFW_OPENGL_CORE_PROFILE);
+    glfw.glfwWindowHint(glfw.GLFW_OPENGL_FORWARD_COMPAT, 1);
+    glfw.glfwSwapInterval(0);
     state.window = try Window.init(
         state.allocator,
         init_info.width,
@@ -328,9 +333,9 @@ fn initWindow(init_info: *const EngineInitInfo) !void {
         init_info.name,
     );
 
-    glfw.setErrorCallback(glfwCallback);
-
-    state.window.glfw_window.setInputModeCursor(.disabled);
+    _ = glfw.glfwSetErrorCallback(glfwCallback);
+    state.window.enableCursor(false);
+    // state.window.glfw_window.setInputModeCursor(.disabled);
 }
 
 fn initCamera() void {
@@ -344,37 +349,37 @@ fn initScene() void {
 
 fn initImGui() void {
     log.info("loading imgui", .{});
-    _ = c.CIMGUI_CHECKVERSION();
-    _ = c.ImGui_CreateContext(null);
+    _ = ig.CIMGUI_CHECKVERSION();
+    _ = ig.ImGui_CreateContext(null);
 
-    state.imio = @ptrCast(c.ImGui_GetIO());
-    state.imio.ConfigFlags = c.ImGuiConfigFlags_NavEnableKeyboard;
+    state.imio = @ptrCast(ig.ImGui_GetIO());
+    state.imio.ConfigFlags = ig.ImGuiConfigFlags_NavEnableKeyboard;
 
-    c.ImGui_StyleColorsDark(null);
+    ig.ImGui_StyleColorsDark(null);
 
-    _ = c.cImGui_ImplGlfw_InitForOpenGL(@ptrCast(state.window.glfw_window.handle), true);
+    _ = ig.cImGui_ImplGlfw_InitForOpenGL(@ptrCast(state.window.glfw_window), true);
 
     const glsl_version = "#version 410";
-    _ = c.cImGui_ImplOpenGL3_InitEx(glsl_version);
+    _ = ig.cImGui_ImplOpenGL3_InitEx(glsl_version);
 }
 
 fn imGuiUpdate() void {
     if (state.cursor_enabled) {
-        c.cImGui_ImplOpenGL3_NewFrame();
-        c.cImGui_ImplGlfw_NewFrame();
-        c.ImGui_NewFrame();
+        ig.cImGui_ImplOpenGL3_NewFrame();
+        ig.cImGui_ImplGlfw_NewFrame();
+        ig.ImGui_NewFrame();
 
-        c.ImGui_ShowDemoWindow(null);
+        ig.ImGui_ShowDemoWindow(null);
 
-        c.ImGui_Render();
-        c.cImGui_ImplOpenGL3_RenderDrawData(c.ImGui_GetDrawData());
+        ig.ImGui_Render();
+        ig.cImGui_ImplOpenGL3_RenderDrawData(ig.ImGui_GetDrawData());
     }
 }
 
 fn deinitImGui() void {
-    c.cImGui_ImplOpenGL3_Shutdown();
-    c.cImGui_ImplGlfw_Shutdown();
-    c.ImGui_DestroyContext(null);
+    ig.cImGui_ImplOpenGL3_Shutdown();
+    ig.cImGui_ImplGlfw_Shutdown();
+    ig.ImGui_DestroyContext(null);
 }
 
 fn enableWireframe() void {
@@ -419,9 +424,9 @@ fn processInput() void {
     if (input.keyPressed(.two)) {
         state.cursor_enabled = !state.cursor_enabled;
         if (!state.cursor_enabled) {
-            state.window.glfw_window.setInputModeCursor(.disabled);
+            state.window.enableCursor(false);
         } else {
-            state.window.glfw_window.setInputModeCursor(.normal);
+            state.window.enableCursor(true);
         }
     }
 }

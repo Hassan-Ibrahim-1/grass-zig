@@ -1,7 +1,11 @@
 const std = @import("std");
-const glfw = @import("glfw");
 const Allocator = std.mem.Allocator;
+const engine = @import("engine.zig");
 const gl = @import("gl");
+const glfw = engine.glfw;
+const input = engine.input;
+const Key = input.Key;
+const Action = input.Action;
 
 const Window = @This();
 
@@ -18,7 +22,7 @@ height: u32,
 name: [*:0]const u8,
 /// don't mutate this. you can call functions on this. but don't
 /// assign it to something else
-glfw_window: glfw.Window,
+glfw_window: *glfw.GLFWwindow,
 /// don't touch this
 gl_procs: *gl.ProcTable,
 
@@ -31,60 +35,93 @@ pub fn init(
     height: u32,
     name: [*:0]const u8,
 ) !Window {
-    var glfw_window = glfw.Window.create(width, height, name, null, null, .{
-        .context_version_major = gl.info.version_major,
-        .context_version_minor = gl.info.version_minor,
-        .opengl_profile = .opengl_core_profile,
-        .opengl_forward_compat = true,
-    }) orelse return error.GlfwInitfailed;
+    const window = glfw.glfwCreateWindow(
+        @intCast(width),
+        @intCast(height),
+        @ptrCast(name),
+        null,
+        null,
+    ) orelse return error.GlfwInitfailed;
+    // var glfw_window = glfw.Window.create(width, height, name, null, null, .{
+    //     .context_version_major = gl.info.version_major,
+    //     .context_version_minor = gl.info.version_minor,
+    //     .opengl_profile = .opengl_core_profile,
+    //     .opengl_forward_compat = true,
+    // }) orelse return error.GlfwInitfailed;
 
-    glfw.makeContextCurrent(glfw_window);
+    glfw.glfwMakeContextCurrent(window);
+    // glfw.makeContextCurrent(glfw_window);
     var gl_procs = try allocator.create(gl.ProcTable);
-    if (!gl_procs.init(glfw.getProcAddress)) {
+    if (!gl_procs.init(glfw.glfwGetProcAddress)) {
         return error.GlInitFailed;
     }
 
     gl.makeProcTableCurrent(gl_procs);
 
-    glfw_window.setFramebufferSizeCallback(framebufferSizeCallback);
+    _ = glfw.glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
     return .{
         .allocator = allocator,
         .width = width,
         .height = height,
         .name = name,
-        .glfw_window = glfw_window,
+        .glfw_window = window,
         .gl_procs = gl_procs,
     };
 }
 
 pub fn deinit(self: *Window) void {
     self.allocator.destroy(self.gl_procs);
-    self.glfw_window.destroy();
-    glfw.makeContextCurrent(null);
+    glfw.glfwDestroyWindow(self.glfw_window);
+    glfw.glfwMakeContextCurrent(null);
     gl.makeProcTableCurrent(null);
 }
 
-fn framebufferSizeCallback(window: glfw.Window, width: u32, height: u32) void {
+fn framebufferSizeCallback(
+    window: ?*glfw.GLFWwindow,
+    width: c_int,
+    height: c_int,
+) callconv(.C) void {
     _ = window;
     gl.Viewport(0, 0, @intCast(width), @intCast(height));
 }
 
 pub fn swapBuffers(self: *Window) void {
-    const size = self.glfw_window.getSize();
-    self.width = size.width;
-    self.height = size.height;
-    self.glfw_window.swapBuffers();
+    glfw.glfwGetWindowSize(
+        self.glfw_window,
+        @ptrCast(&self.width),
+        @ptrCast(&self.height),
+    );
+    // self.width = size.width;
+    // self.height = size.height;
+    glfw.glfwSwapBuffers(self.glfw_window);
+    // self.glfw_window.swapBuffers();
 }
 
 pub fn shouldClose(self: *Window) bool {
-    return self.glfw_window.shouldClose();
+    return if (glfw.glfwWindowShouldClose(self.glfw_window) != 0) ret: {
+        break :ret true;
+    } else ret: {
+        break :ret false;
+    };
 }
 
 pub fn setShouldClose(self: *Window, value: bool) void {
-    self.glfw_window.setShouldClose(value);
+    glfw.glfwSetWindowShouldClose(self.glfw_window, if (value) 1 else 0);
+    // self.glfw_window.setShouldClose(value);
 }
 
-pub fn getKey(self: *Window, key: glfw.Key) glfw.Action {
-    return self.glfw_window.getKey(key);
+pub fn getKey(self: *Window, key: Key) Action {
+    return @enumFromInt(glfw.glfwGetKey(
+        self.glfw_window,
+        key.toCint(),
+    ));
+}
+
+pub fn enableCursor(self: *Window, b: bool) void {
+    glfw.glfwSetInputMode(
+        self.glfw_window,
+        glfw.GLFW_CURSOR,
+        if (b) glfw.GLFW_CURSOR_NORMAL else glfw.GLFW_CURSOR_DISABLED,
+    );
 }
