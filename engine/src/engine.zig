@@ -370,6 +370,7 @@ fn initImGui() void {
     _ = ig_raw.cImGui_ImplOpenGL3_InitEx(glsl_version);
 
     ig.init(state.allocator);
+    ig.setMaterialYouTheme();
 }
 
 fn imGuiStartFrame() void {

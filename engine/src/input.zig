@@ -470,6 +470,7 @@ fn mouseScrollCallback(
         @floatCast(xoffset),
         @floatCast(yoffset),
     );
+    if (imio.WantCaptureMouse) return;
     camera.processMouseScroll(@floatCast(yoffset));
 }
 
