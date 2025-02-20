@@ -150,6 +150,7 @@ pub fn hasLights(self: *const Scene) bool {
 pub fn clearActors(self: *Scene) void {
     var iter = self.actors.iterator();
     while (iter.next()) |actor| {
+        actor.value_ptr.*.deinit();
         self.allocator.destroy(actor.value_ptr.*);
     }
     self.actors.clearAndFree();

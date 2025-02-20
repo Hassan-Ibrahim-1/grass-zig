@@ -40,6 +40,23 @@ pub fn from(r: u8) Color {
     return Color.init(r, r, r);
 }
 
+pub fn fromVec3(v: Vec3) Color {
+    return Color.init(
+        @intFromFloat(v.x * 255),
+        @intFromFloat(v.y * 255),
+        @intFromFloat(v.z * 255),
+    );
+}
+
+pub fn fromVec4(v: Vec4) Color {
+    return Color.initAll(
+        @intFromFloat(v.x * 255),
+        @intFromFloat(v.y * 255),
+        @intFromFloat(v.z * 255),
+        @intFromFloat(v.w * 255),
+    );
+}
+
 pub fn initAll(
     r: u8,
     g: u8,

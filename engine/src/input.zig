@@ -243,11 +243,11 @@ fn setCallbacks() void {
 
 pub fn startFrame() void {
     glfw.glfwPollEvents();
-    updateKeys();
 
     const dt = engine.deltaTime();
 
     if (imio.WantTextInput) return;
+    updateKeys();
 
     if (window.getKey(.w) == .press) {
         camera.processKeyboard(.forward, dt);
@@ -391,7 +391,11 @@ fn keyCallback(
     const key = Key.fromCint(c_key);
     const action = Action.fromCint(c_action);
     if ((key == .escape) and action == .press) {
-        window.setShouldClose(true);
+        if (engine.cursorEnabled()) {
+            engine.setCursorEnabled(false);
+        } else {
+            window.setShouldClose(true);
+        }
     }
 
     if (imio.WantTextInput) return;

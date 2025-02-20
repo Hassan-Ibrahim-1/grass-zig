@@ -22,6 +22,7 @@ const renderer = engine.renderer;
 const Texture = engine.Texture;
 const Actor = engine.Actor;
 const Model = engine.Model;
+const ig = engine.ig;
 const Allocator = std.mem.Allocator;
 
 const vertices = [_]Vertex{
@@ -39,8 +40,11 @@ const indices = [_]u32{
 var shader: Shader = undefined;
 var camera: *Camera = undefined;
 var actor: *Actor = undefined;
-var model: Model = undefined;
+var monkey: Model = undefined;
 var allocator: Allocator = undefined;
+var ground: *Actor = undefined;
+var grass: *Actor = undefined;
+var grass_model: Model = undefined;
 
 fn init() anyerror!void {
     allocator = engine.allocator();
@@ -55,8 +59,8 @@ fn init() anyerror!void {
     actor = scene.createActor("Monkey");
     actor.transform = Transform{};
     // const mesh = actor.render_item.createMesh();
-    model = Model.init(allocator, fs.modelPath("monkey.glb"));
-    actor.render_item.loadModelData(&model);
+    monkey = Model.init(allocator, fs.modelPath("monkey.glb"));
+    actor.render_item.loadModelData(&monkey);
 
     const light = scene.createPointLight("light");
     light.position.y = 5.0;
@@ -64,6 +68,18 @@ fn init() anyerror!void {
     actor.render_item.material.createDiffuseTexture(
         fs.texturePath("water_normal.png"),
     );
+
+    ground = scene.createActor("ground");
+    ground.render_item.loadModelData(renderer.cubeModel());
+    ground.transform = .{
+        .position = Vec3.init(0, -2.6, 0),
+        .scale = Vec3.init(14.3, 1.0, 13.3),
+    };
+
+    grass = scene.createActor("grass");
+
+    grass_model = Model.init(allocator, fs.modelPath("grass.glb"));
+    grass.render_item.loadModelData(&grass_model);
 
     // actor.render_item.material.shader = &shader;
 
@@ -76,17 +92,25 @@ fn init() anyerror!void {
 fn update() anyerror!void {
     debug.checkGlError();
 
+    if (engine.cursorEnabled()) {
+        ig.begin("user");
+        defer ig.end();
+
+        _ = ig.actor("monkey", actor);
+        _ = ig.actor("ground", ground);
+        _ = ig.actor("grass", grass);
+    }
+
     if (input.mouseButtonClicked(.left)) {
         actor.render_item.material.color = Color.init(0, 255, 0);
     } else if (input.mouseButtonClicked(.right)) {
         actor.render_item.material.color = Color.from(255);
     }
-    // renderer.renderMesh(&mesh);
 }
 
 fn deinit() void {
-    actor.deinit();
-    model.deinit();
+    grass_model.deinit();
+    monkey.deinit();
 }
 
 pub fn main() !void {

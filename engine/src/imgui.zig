@@ -5,6 +5,22 @@ const math = engine.math;
 const Vec2 = math.Vec2;
 const Vec3 = math.Vec3;
 const Vec4 = math.Vec4;
+const Color = engine.Color;
+const Material = engine.Material;
+const RenderItem = engine.RenderItem;
+const Transform = engine.Transform;
+const Actor = engine.Actor;
+const Allocator = std.mem.Allocator;
+
+const State = struct {
+    allocator: Allocator,
+};
+
+var state: State = undefined;
+
+pub fn init(allocator: Allocator) void {
+    state.allocator = allocator;
+}
 
 pub fn begin(name: [:0]const u8) void {
     beginEx(name, null, 0);
@@ -204,8 +220,8 @@ pub fn dragVec2Ex(
     name: [:0]const u8,
     v: *Vec2,
     speed: f32,
-    vmin: f32,
-    vmax: f32,
+    vmin: ?f32,
+    vmax: ?f32,
 ) bool {
     return dragFloat2Ex(
         name,
@@ -227,8 +243,8 @@ pub fn dragVec3Ex(
     name: [:0]const u8,
     v: *Vec3,
     speed: f32,
-    vmin: f32,
-    vmax: f32,
+    vmin: ?f32,
+    vmax: ?f32,
 ) bool {
     return dragFloat3Ex(
         name,
@@ -250,8 +266,8 @@ pub fn dragVec4Ex(
     name: [:0]const u8,
     v: *Vec4,
     speed: f32,
-    vmin: f32,
-    vmax: f32,
+    vmin: ?f32,
+    vmax: ?f32,
 ) bool {
     return dragFloat4Ex(
         name,
@@ -261,3 +277,103 @@ pub fn dragVec4Ex(
         vmax,
     );
 }
+
+pub fn checkBox(name: [:0]const u8, b: *bool) bool {
+    return ig.ImGui_Checkbox(@ptrCast(name), @ptrCast(b));
+}
+
+pub fn color3(name: [:0]const u8, c: *Color) bool {
+    var v = c.clampedVec3();
+    const res = ig.ImGui_ColorEdit3(@ptrCast(name), @ptrCast(&v), 0);
+    c.* = Color.fromVec3(v);
+    return res;
+}
+
+pub fn color4(name: [:0]const u8, c: *Color) bool {
+    var v = c.clampedVec4();
+    const res = ig.ImGui_ColorEdit4(@ptrCast(name), @ptrCast(&v), 0);
+    c.* = Color.fromVec4(v);
+    return res;
+}
+
+/// only bases the return value on position
+pub fn transform(name: [:0]const u8, tf: *Transform) bool {
+    var n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " position" },
+        0,
+    ) catch unreachable;
+    const res = dragVec3Ex(n1, &tf.position, 0.1, null, null);
+    state.allocator.free(n1);
+
+    n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " scale" },
+        0,
+    ) catch unreachable;
+    _ = dragVec3Ex(n1, &tf.scale, 0.1, null, null);
+    state.allocator.free(n1);
+
+    n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " rotation" },
+        0,
+    ) catch unreachable;
+    _ = dragVec3Ex(n1, &tf.rotation, 0.1, null, null);
+    state.allocator.free(n1);
+
+    return res;
+}
+
+/// return value is based on whether color changed
+pub fn material(name: [:0]const u8, mat: *Material) bool {
+    var n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " color" },
+        0,
+    ) catch unreachable;
+    const res = color3(n1, &mat.color);
+    state.allocator.free(n1);
+
+    n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " shininess" },
+        0,
+    ) catch unreachable;
+    _ = dragFloat(n1, &mat.shininess);
+    state.allocator.free(n1);
+
+    return res;
+}
+
+pub fn renderItem(name: [:0]const u8, ri: *RenderItem) bool {
+    const res = material(name, &ri.material);
+    const n1 = std.mem.concatWithSentinel(
+        state.allocator,
+        u8,
+        &.{ name, " hidden" },
+        0,
+    ) catch unreachable;
+    _ = checkBox(n1, &ri.hidden);
+    state.allocator.free(n1);
+
+    return res;
+}
+
+pub fn spacing() void {
+    ig.ImGui_Spacing();
+}
+
+/// returns result of transform
+pub fn actor(name: [:0]const u8, actr: *Actor) bool {
+    const res = transform(name, &actr.transform);
+    _ = renderItem(name, &actr.render_item);
+    return res;
+}
+
+// TODO: lights

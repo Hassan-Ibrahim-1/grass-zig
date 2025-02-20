@@ -86,6 +86,7 @@ const State = struct {
     cursor_enabled: bool = false,
     scene: Scene,
     imio: *ig_raw.ImGuiIO_t,
+    clear_color: Color,
 };
 
 var state: State = undefined;
@@ -95,6 +96,7 @@ pub fn init(init_info: *const EngineInitInfo) !void {
     try initWindow(init_info);
     initCamera();
     state.shaders = ArrayList(*Shader).init(state.allocator);
+    state.clear_color = Color.from(26);
     initScene();
     initImGui();
 
@@ -119,10 +121,10 @@ pub fn deinit() void {
     renderer.deinit();
     state.shaders.deinit();
     deinitImGui();
+    state.scene.deinit();
 
     // deinit window after everything that requires opengl
     state.window.deinit();
-    state.scene.deinit();
     glfw.glfwTerminate();
     std.debug.assert(state.gpa.deinit() == .ok);
 }
@@ -174,7 +176,8 @@ fn updateDeltaTime() void {
 }
 
 fn startFrame() void {
-    gl.ClearColor(0.1, 0.1, 0.1, 1);
+    const v = state.clear_color.clampedVec3();
+    gl.ClearColor(v.x, v.y, v.z, 1);
     gl.Clear(gl.COLOR_BUFFER_BIT);
     gl.Clear(gl.DEPTH_BUFFER_BIT);
     updateDeltaTime();
@@ -183,6 +186,7 @@ fn startFrame() void {
     cl_renderer.startFrame();
     renderer.startFrame();
     processInput();
+    scene().skybox_hidden = true;
     // createLayout();
 }
 
@@ -364,6 +368,8 @@ fn initImGui() void {
 
     const glsl_version = "#version 410";
     _ = ig_raw.cImGui_ImplOpenGL3_InitEx(glsl_version);
+
+    ig.init(state.allocator);
 }
 
 fn imGuiStartFrame() void {
@@ -379,6 +385,7 @@ fn imGuiEndFrame() void {
 
 var f_arr = [_]f32{ 1.1, 1.2 };
 var v_test = Vec2.init(69, 420);
+var tf = Transform.initMinimum();
 fn imGuiUpdate() void {
     if (state.cursor_enabled) {
         // ig_raw.ImGui_ShowDemoWindow(null);
@@ -386,6 +393,8 @@ fn imGuiUpdate() void {
         ig.begin("Hey");
         _ = ig.dragFloat2("hey", @ptrCast(&f_arr));
         _ = ig.dragVec2Ex("vec2", &v_test, 0.01, 0, 100);
+        _ = ig.color3("clear color", &state.clear_color);
+        _ = ig.transform("player", &tf);
         ig.end();
     }
 }
@@ -413,7 +422,6 @@ fn disableWireframe() void {
 }
 
 fn processInput() void {
-    // TODO:: KEY DOWN BROKEN
     if (input.keyPressed(.one)) {
         // log.info("pressed one", .{});
         if (state.wireframe_enabled) {
@@ -453,8 +461,8 @@ pub fn cursorEnabled() bool {
     return state.cursor_enabled;
 }
 
-fn updateCursor() void {
-    if (state.cursor_enabled) {}
+pub fn setCursorEnabled(b: bool) void {
+    state.cursor_enabled = b;
 }
 
 test {

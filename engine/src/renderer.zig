@@ -329,3 +329,7 @@ fn renderSkybox(skybox: *Skybox) void {
         gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE);
     }
 }
+
+pub fn cubeModel() *Model {
+    return &state.cube;
+}
