@@ -72,8 +72,12 @@ loading textures from gltfs
 -- Scene
 -- renderer backend to abstract opengl
 -- skyboxes
+-- imgui
+
 hot reloading (not strictly important)
 VertexBuffer Attributes
+
+imgui utils
 
 
 make smaller structs that each sub system would use

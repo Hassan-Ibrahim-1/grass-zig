@@ -29,12 +29,13 @@ pub const RenderItem = @import("RenderItem.zig");
 pub const Model = @import("Model.zig");
 pub const Scene = @import("Scene.zig");
 pub const Skybox = @import("Skybox.zig");
+pub const ig = @import("imgui.zig");
 
 pub const glfw = @cImport({
     @cDefine("GLFW_INCLUDE_NONE", "1");
     @cInclude("GLFW/glfw3.h");
 });
-pub const ig = @cImport({
+pub const ig_raw = @cImport({
     @cInclude("dcimgui.h");
     @cInclude("backends/dcimgui_impl_glfw.h");
     @cInclude("backends/dcimgui_impl_opengl3.h");
@@ -84,7 +85,7 @@ const State = struct {
     shaders: ArrayList(*Shader),
     cursor_enabled: bool = false,
     scene: Scene,
-    imio: *ig.ImGuiIO_t,
+    imio: *ig_raw.ImGuiIO_t,
 };
 
 var state: State = undefined;
@@ -177,6 +178,7 @@ fn startFrame() void {
     gl.Clear(gl.COLOR_BUFFER_BIT);
     gl.Clear(gl.DEPTH_BUFFER_BIT);
     updateDeltaTime();
+    imGuiStartFrame();
     input.startFrame();
     cl_renderer.startFrame();
     renderer.startFrame();
@@ -187,6 +189,7 @@ fn startFrame() void {
 fn endFrame() void {
     cl_renderer.endFrame();
     input.endFrame();
+    imGuiEndFrame();
 
     state.window.swapBuffers();
 }
@@ -206,14 +209,14 @@ fn update() void {
 
     state.app.update() catch @panic("user update failed");
 
-    text.renderText(
-        "the brown fox jumps\n over the lazy dog",
-        Vec2.init(45.0, 100.0),
-        1.0,
-        Color.init(127, 121, 221),
-    ) catch |err| {
-        log.err("failed to render text: {s}", err);
-    };
+    // text.renderText(
+    //     "the brown fox jumps\n over the lazy dog",
+    //     Vec2.init(45.0, 100.0),
+    //     1.0,
+    //     Color.init(127, 121, 221),
+    // ) catch |err| {
+    //     log.err("failed to render text: {s}", err);
+    // };
 
     renderer.render();
 
@@ -349,43 +352,51 @@ fn initScene() void {
 
 fn initImGui() void {
     log.info("loading imgui", .{});
-    _ = ig.CIMGUI_CHECKVERSION();
-    _ = ig.ImGui_CreateContext(null);
+    _ = ig_raw.CIMGUI_CHECKVERSION();
+    _ = ig_raw.ImGui_CreateContext(null);
 
-    state.imio = @ptrCast(ig.ImGui_GetIO());
-    state.imio.ConfigFlags = ig.ImGuiConfigFlags_NavEnableKeyboard;
+    state.imio = @ptrCast(ig_raw.ImGui_GetIO());
+    state.imio.ConfigFlags = ig_raw.ImGuiConfigFlags_NavEnableKeyboard;
 
-    ig.ImGui_StyleColorsDark(null);
+    ig_raw.ImGui_StyleColorsDark(null);
 
-    _ = ig.cImGui_ImplGlfw_InitForOpenGL(@ptrCast(state.window.glfw_window), true);
+    _ = ig_raw.cImGui_ImplGlfw_InitForOpenGL(@ptrCast(state.window.glfw_window), true);
 
     const glsl_version = "#version 410";
-    _ = ig.cImGui_ImplOpenGL3_InitEx(glsl_version);
+    _ = ig_raw.cImGui_ImplOpenGL3_InitEx(glsl_version);
 }
 
+fn imGuiStartFrame() void {
+    ig_raw.cImGui_ImplOpenGL3_NewFrame();
+    ig_raw.cImGui_ImplGlfw_NewFrame();
+    ig_raw.ImGui_NewFrame();
+}
+
+fn imGuiEndFrame() void {
+    ig_raw.ImGui_Render();
+    ig_raw.cImGui_ImplOpenGL3_RenderDrawData(ig_raw.ImGui_GetDrawData());
+}
+
+var f_arr = [_]f32{ 1.1, 1.2 };
+var v_test = Vec2.init(69, 420);
 fn imGuiUpdate() void {
     if (state.cursor_enabled) {
-        ig.cImGui_ImplOpenGL3_NewFrame();
-        ig.cImGui_ImplGlfw_NewFrame();
-        ig.ImGui_NewFrame();
+        // ig_raw.ImGui_ShowDemoWindow(null);
 
-        ig.ImGui_ShowDemoWindow(null);
-
-        _ = ig.ImGui_Begin("hey", null, 0);
-        ig.ImGui_End();
-
-        ig.ImGui_Render();
-        ig.cImGui_ImplOpenGL3_RenderDrawData(ig.ImGui_GetDrawData());
+        ig.begin("Hey");
+        _ = ig.dragFloat2("hey", @ptrCast(&f_arr));
+        _ = ig.dragVec2Ex("vec2", &v_test, 0.01, 0, 100);
+        ig.end();
     }
 }
 
 fn deinitImGui() void {
-    ig.cImGui_ImplOpenGL3_Shutdown();
-    ig.cImGui_ImplGlfw_Shutdown();
-    ig.ImGui_DestroyContext(null);
+    ig_raw.cImGui_ImplOpenGL3_Shutdown();
+    ig_raw.cImGui_ImplGlfw_Shutdown();
+    ig_raw.ImGui_DestroyContext(null);
 }
 
-pub fn imGuiIo() *ig.ImGuiIO_t {
+pub fn imGuiIo() *ig_raw.ImGuiIO_t {
     return state.imio;
 }
 

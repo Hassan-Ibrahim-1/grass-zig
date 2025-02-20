@@ -11,7 +11,7 @@ const Window = engine.Window;
 const Transform = @import("Transform.zig");
 const Camera = @import("Camera.zig");
 const glfw = engine.glfw;
-const ig = engine.ig;
+const ig = engine.ig_raw;
 
 const start_key_index: u32 = @intFromEnum(Key.space);
 const max_keys: u32 = @as(u32, Key.last()) + 1;
