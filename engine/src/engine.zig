@@ -337,7 +337,6 @@ fn initWindow(init_info: *const EngineInitInfo) !void {
     glfw.glfwWindowHint(glfw.GLFW_CONTEXT_VERSION_MINOR, 1);
     glfw.glfwWindowHint(glfw.GLFW_OPENGL_PROFILE, glfw.GLFW_OPENGL_CORE_PROFILE);
     glfw.glfwWindowHint(glfw.GLFW_OPENGL_FORWARD_COMPAT, 1);
-    glfw.glfwSwapInterval(0);
     state.window = try Window.init(
         state.allocator,
         init_info.width,
@@ -347,6 +346,7 @@ fn initWindow(init_info: *const EngineInitInfo) !void {
 
     _ = glfw.glfwSetErrorCallback(glfwCallback);
     state.window.enableCursor(false);
+    glfw.glfwSwapInterval(0);
     // state.window.glfw_window.setInputModeCursor(.disabled);
 }
 

@@ -377,6 +377,19 @@ pub fn actor(name: [:0]const u8, actr: *Actor) bool {
     return res;
 }
 
+pub fn text(str: [:0]const u8) void {
+    ig.ImGui_Text(str);
+}
+
+pub fn fpsCounter() void {
+    const fps = engine.imGuiIo().Framerate;
+    ig.ImGui_Text(
+        "Application average %.3f ms/frame (%.1f FPS)",
+        1000.0 / fps,
+        fps,
+    );
+}
+
 // TODO: lights
 
 fn initImVec4(r: f32, g: f32, b: f32, a: f32) ig.ImVec4 {
