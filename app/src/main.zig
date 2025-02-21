@@ -39,8 +39,6 @@ const indices = [_]u32{
 
 var shader: Shader = undefined;
 var camera: *Camera = undefined;
-var actor: *Actor = undefined;
-var monkey: Model = undefined;
 var allocator: Allocator = undefined;
 var ground: *Actor = undefined;
 var grass: *Actor = undefined;
@@ -56,18 +54,9 @@ fn init() anyerror!void {
     engine.addShader(&shader);
 
     const scene = engine.scene();
-    actor = scene.createActor("Monkey");
-    actor.transform = Transform{};
-    // const mesh = actor.render_item.createMesh();
-    monkey = Model.init(allocator, fs.modelPath("monkey.glb"));
-    actor.render_item.loadModelData(&monkey);
 
     const light = scene.createPointLight("light");
-    light.position.y = 5.0;
-
-    actor.render_item.material.createDiffuseTexture(
-        fs.texturePath("water_normal.png"),
-    );
+    light.position.y = 8.5;
 
     ground = scene.createActor("ground");
     ground.render_item.loadModelData(renderer.cubeModel());
@@ -77,11 +66,8 @@ fn init() anyerror!void {
     };
 
     grass = scene.createActor("grass");
-
     grass_model = Model.init(allocator, fs.modelPath("grass.glb"));
     grass.render_item.loadModelData(&grass_model);
-
-    // actor.render_item.material.shader = &shader;
 
     camera = engine.camera();
     camera.transform.position.z = 2;
@@ -96,27 +82,27 @@ fn update() anyerror!void {
         ig.begin("user");
         defer ig.end();
 
-        _ = ig.actor("monkey", actor);
         _ = ig.actor("ground", ground);
         _ = ig.actor("grass", grass);
-    }
-
-    if (input.mouseButtonClicked(.left)) {
-        actor.render_item.material.color = Color.init(0, 255, 0);
-    } else if (input.mouseButtonClicked(.right)) {
-        actor.render_item.material.color = Color.from(255);
+        const scene = engine.scene();
+        _ = ig.dragVec3Ex(
+            "light pos",
+            &scene.point_lights.get("light").?.position,
+            0.01,
+            null,
+            null,
+        );
     }
 }
 
 fn deinit() void {
     grass_model.deinit();
-    monkey.deinit();
 }
 
 pub fn main() !void {
     try engine.init(&.{
-        .width = 1280,
-        .height = 720,
+        .width = 1920,
+        .height = 1080,
         .name = "App",
     });
     defer engine.deinit();
