@@ -44,9 +44,9 @@ var state: State = undefined;
 pub fn init(allocator: Allocator) void {
     state.allocator = allocator;
     initShaders();
+    initModels();
     state.camera = engine.camera();
     state.user_shaders = engine.userShaders();
-    initModels();
 }
 
 pub fn deinit() void {
@@ -59,6 +59,7 @@ pub fn initModels() void {
         state.allocator,
         fs.modelPath("cube.glb"),
     );
+    log.info("succesfully loaded cube model data", .{});
 }
 
 pub fn deinitModels() void {

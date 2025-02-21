@@ -100,10 +100,10 @@ pub fn init(init_info: *const EngineInitInfo) !void {
     initScene();
     initImGui();
 
+    renderer.init(state.allocator);
     input.init(state.allocator);
     try text.init(state.allocator);
     try cl_renderer.init(state.allocator);
-    renderer.init(state.allocator);
 
     // for text rendering
     gl.Enable(gl.BLEND);
@@ -186,7 +186,7 @@ fn startFrame() void {
     cl_renderer.startFrame();
     renderer.startFrame();
     processInput();
-    scene().skybox_hidden = true;
+    // scene().skybox_hidden = true;
     // createLayout();
 }
 
@@ -224,7 +224,7 @@ fn update() void {
 
     renderer.render();
 
-    imGuiUpdate();
+    updateImGui();
 
     debug.checkGlError();
 }
@@ -384,19 +384,19 @@ fn imGuiEndFrame() void {
     ig_raw.cImGui_ImplOpenGL3_RenderDrawData(ig_raw.ImGui_GetDrawData());
 }
 
-var f_arr = [_]f32{ 1.1, 1.2 };
-var v_test = Vec2.init(69, 420);
-var tf = Transform.initMinimum();
-fn imGuiUpdate() void {
+// var f_arr = [_]f32{ 1.1, 1.2 };
+// var v_test = Vec2.init(69, 420);
+// var tf = Transform.initMinimum();
+fn updateImGui() void {
     if (state.cursor_enabled) {
         // ig_raw.ImGui_ShowDemoWindow(null);
 
-        ig.begin("Hey");
-        _ = ig.dragFloat2("hey", @ptrCast(&f_arr));
-        _ = ig.dragVec2Ex("vec2", &v_test, 0.01, 0, 100);
-        _ = ig.color3("clear color", &state.clear_color);
-        _ = ig.transform("player", &tf);
-        ig.end();
+        // ig.begin("Hey");
+        // _ = ig.dragFloat2("hey", @ptrCast(&f_arr));
+        // _ = ig.dragVec2Ex("vec2", &v_test, 0.01, 0, 100);
+        // _ = ig.color3("clear color", &state.clear_color);
+        // _ = ig.transform("player", &tf);
+        // ig.end();
     }
 }
 

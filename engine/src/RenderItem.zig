@@ -40,7 +40,10 @@ pub fn meshCount(self: *RenderItem) usize {
 }
 
 /// This function expects that the model's lifetime is greater than or equal to this render item's
-pub fn loadModelData(self: *RenderItem, model: *const Model) void {
+pub fn loadModelData(
+    self: *RenderItem,
+    model: *const Model,
+) void {
     for (model.meshes.items) |*mesh| {
         self.meshes.append(
             Mesh.fromVao(

@@ -32,7 +32,27 @@ pub fn init(
         @ptrCast(&data),
     );
     if (result != c.cgltf_result_success) {
+        switch (result) {
+            c.cgltf_result_file_not_found => {
+                log.err("file not found", .{});
+            },
+            c.cgltf_result_io_error => {
+                log.err("io error", .{});
+            },
+            c.cgltf_result_invalid_gltf => {
+                log.err("invalid gltf", .{});
+            },
+            c.cgltf_result_out_of_memory => {
+                log.err("out of memory", .{});
+            },
+            else => {
+                log.err("some other reason", .{});
+            },
+        }
         log.err("Failed to load model from file {s}", .{path});
+        const r = c.cgltf_validate(data);
+        log.info("mm: {}", .{r});
+        log.info("Failed here", .{});
         @panic("Bad model load");
     }
     log.info("file loaded", .{});

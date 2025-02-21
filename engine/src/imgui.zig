@@ -373,12 +373,13 @@ pub fn spacing() void {
 pub fn actor(name: [:0]const u8, actr: *Actor) bool {
     const res = transform(name, &actr.transform);
     _ = renderItem(name, &actr.render_item);
+    spacing();
     return res;
 }
 
 // TODO: lights
 
-fn ImVec4(r: f32, g: f32, b: f32, a: f32) ig.ImVec4 {
+fn initImVec4(r: f32, g: f32, b: f32, a: f32) ig.ImVec4 {
     return .{
         .x = r,
         .y = g,
@@ -387,7 +388,7 @@ fn ImVec4(r: f32, g: f32, b: f32, a: f32) ig.ImVec4 {
     };
 }
 
-fn ImVec2(r: f32, g: f32) ig.ImVec2 {
+fn initImVec2(r: f32, g: f32) ig.ImVec2 {
     return .{
         .x = r,
         .y = g,
@@ -399,59 +400,59 @@ pub fn setMaterialYouTheme() void {
     var colors = style.*.Colors;
 
     // Base colors inspired by Material You (dark mode)
-    colors[ig.ImGuiCol_Text] = ImVec4(0.93, 0.93, 0.94, 1.00);
-    colors[ig.ImGuiCol_TextDisabled] = ImVec4(0.50, 0.50, 0.50, 1.00);
-    colors[ig.ImGuiCol_WindowBg] = ImVec4(0.12, 0.12, 0.12, 1.00);
-    colors[ig.ImGuiCol_ChildBg] = ImVec4(0.12, 0.12, 0.12, 1.00);
-    colors[ig.ImGuiCol_PopupBg] = ImVec4(0.15, 0.15, 0.15, 1.00);
-    colors[ig.ImGuiCol_Border] = ImVec4(0.25, 0.25, 0.28, 1.00);
-    colors[ig.ImGuiCol_BorderShadow] = ImVec4(0.00, 0.00, 0.00, 0.00);
-    colors[ig.ImGuiCol_FrameBg] = ImVec4(0.18, 0.18, 0.18, 1.00);
-    colors[ig.ImGuiCol_FrameBgHovered] = ImVec4(0.22, 0.22, 0.22, 1.00);
-    colors[ig.ImGuiCol_FrameBgActive] = ImVec4(0.24, 0.24, 0.24, 1.00);
-    colors[ig.ImGuiCol_TitleBg] = ImVec4(0.14, 0.14, 0.14, 1.00);
-    colors[ig.ImGuiCol_TitleBgActive] = ImVec4(0.16, 0.16, 0.16, 1.00);
-    colors[ig.ImGuiCol_TitleBgCollapsed] = ImVec4(0.14, 0.14, 0.14, 1.00);
-    colors[ig.ImGuiCol_MenuBarBg] = ImVec4(0.14, 0.14, 0.14, 1.00);
-    colors[ig.ImGuiCol_ScrollbarBg] = ImVec4(0.14, 0.14, 0.14, 1.00);
-    colors[ig.ImGuiCol_ScrollbarGrab] = ImVec4(0.18, 0.18, 0.18, 1.00);
-    colors[ig.ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.20, 0.20, 0.20, 1.00);
-    colors[ig.ImGuiCol_ScrollbarGrabActive] = ImVec4(0.24, 0.24, 0.24, 1.00);
-    colors[ig.ImGuiCol_CheckMark] = ImVec4(0.45, 0.76, 0.29, 1.00);
-    colors[ig.ImGuiCol_SliderGrab] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_SliderGrabActive] = ImVec4(0.29, 0.66, 0.91, 1.00);
-    colors[ig.ImGuiCol_Button] = ImVec4(0.18, 0.47, 0.91, 1.00);
-    colors[ig.ImGuiCol_ButtonHovered] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_ButtonActive] = ImVec4(0.22, 0.52, 0.91, 1.00);
-    colors[ig.ImGuiCol_Header] = ImVec4(0.18, 0.47, 0.91, 1.00);
-    colors[ig.ImGuiCol_HeaderHovered] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_HeaderActive] = ImVec4(0.29, 0.66, 0.91, 1.00);
-    colors[ig.ImGuiCol_Separator] = ImVec4(0.22, 0.22, 0.22, 1.00);
-    colors[ig.ImGuiCol_SeparatorHovered] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_SeparatorActive] = ImVec4(0.29, 0.66, 0.91, 1.00);
-    colors[ig.ImGuiCol_ResizeGrip] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_ResizeGripHovered] = ImVec4(0.29, 0.66, 0.91, 1.00);
-    colors[ig.ImGuiCol_ResizeGripActive] = ImVec4(0.29, 0.70, 0.91, 1.00);
-    colors[ig.ImGuiCol_Tab] = ImVec4(0.18, 0.18, 0.18, 1.00);
-    colors[ig.ImGuiCol_TabHovered] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_TabActive] = ImVec4(0.18, 0.47, 0.91, 1.00);
-    colors[ig.ImGuiCol_TabUnfocused] = ImVec4(0.14, 0.14, 0.14, 1.00);
-    colors[ig.ImGuiCol_TabUnfocusedActive] = ImVec4(0.18, 0.47, 0.91, 1.00);
-    colors[ig.ImGuiCol_PlotLines] = ImVec4(0.61, 0.61, 0.61, 1.00);
-    colors[ig.ImGuiCol_PlotLinesHovered] = ImVec4(0.29, 0.66, 0.91, 1.00);
-    colors[ig.ImGuiCol_PlotHistogram] = ImVec4(0.90, 0.70, 0.00, 1.00);
-    colors[ig.ImGuiCol_PlotHistogramHovered] = ImVec4(1.00, 0.60, 0.00, 1.00);
-    colors[ig.ImGuiCol_TableHeaderBg] = ImVec4(0.19, 0.19, 0.19, 1.00);
-    colors[ig.ImGuiCol_TableBorderStrong] = ImVec4(0.31, 0.31, 0.35, 1.00);
-    colors[ig.ImGuiCol_TableBorderLight] = ImVec4(0.23, 0.23, 0.25, 1.00);
-    colors[ig.ImGuiCol_TableRowBg] = ImVec4(0.00, 0.00, 0.00, 0.00);
-    colors[ig.ImGuiCol_TableRowBgAlt] = ImVec4(1.00, 1.00, 1.00, 0.06);
-    colors[ig.ImGuiCol_TextSelectedBg] = ImVec4(0.29, 0.62, 0.91, 0.35);
-    colors[ig.ImGuiCol_DragDropTarget] = ImVec4(0.29, 0.62, 0.91, 0.90);
-    colors[ig.ImGuiCol_NavHighlight] = ImVec4(0.29, 0.62, 0.91, 1.00);
-    colors[ig.ImGuiCol_NavWindowingHighlight] = ImVec4(1.00, 1.00, 1.00, 0.70);
-    colors[ig.ImGuiCol_NavWindowingDimBg] = ImVec4(0.80, 0.80, 0.80, 0.20);
-    colors[ig.ImGuiCol_ModalWindowDimBg] = ImVec4(0.80, 0.80, 0.80, 0.35);
+    colors[ig.ImGuiCol_Text] = initImVec4(0.93, 0.93, 0.94, 1.00);
+    colors[ig.ImGuiCol_TextDisabled] = initImVec4(0.50, 0.50, 0.50, 1.00);
+    colors[ig.ImGuiCol_WindowBg] = initImVec4(0.12, 0.12, 0.12, 1.00);
+    colors[ig.ImGuiCol_ChildBg] = initImVec4(0.12, 0.12, 0.12, 1.00);
+    colors[ig.ImGuiCol_PopupBg] = initImVec4(0.15, 0.15, 0.15, 1.00);
+    colors[ig.ImGuiCol_Border] = initImVec4(0.25, 0.25, 0.28, 1.00);
+    colors[ig.ImGuiCol_BorderShadow] = initImVec4(0.00, 0.00, 0.00, 0.00);
+    colors[ig.ImGuiCol_FrameBg] = initImVec4(0.18, 0.18, 0.18, 1.00);
+    colors[ig.ImGuiCol_FrameBgHovered] = initImVec4(0.22, 0.22, 0.22, 1.00);
+    colors[ig.ImGuiCol_FrameBgActive] = initImVec4(0.24, 0.24, 0.24, 1.00);
+    colors[ig.ImGuiCol_TitleBg] = initImVec4(0.14, 0.14, 0.14, 1.00);
+    colors[ig.ImGuiCol_TitleBgActive] = initImVec4(0.16, 0.16, 0.16, 1.00);
+    colors[ig.ImGuiCol_TitleBgCollapsed] = initImVec4(0.14, 0.14, 0.14, 1.00);
+    colors[ig.ImGuiCol_MenuBarBg] = initImVec4(0.14, 0.14, 0.14, 1.00);
+    colors[ig.ImGuiCol_ScrollbarBg] = initImVec4(0.14, 0.14, 0.14, 1.00);
+    colors[ig.ImGuiCol_ScrollbarGrab] = initImVec4(0.18, 0.18, 0.18, 1.00);
+    colors[ig.ImGuiCol_ScrollbarGrabHovered] = initImVec4(0.20, 0.20, 0.20, 1.00);
+    colors[ig.ImGuiCol_ScrollbarGrabActive] = initImVec4(0.24, 0.24, 0.24, 1.00);
+    colors[ig.ImGuiCol_CheckMark] = initImVec4(0.45, 0.76, 0.29, 1.00);
+    colors[ig.ImGuiCol_SliderGrab] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_SliderGrabActive] = initImVec4(0.29, 0.66, 0.91, 1.00);
+    colors[ig.ImGuiCol_Button] = initImVec4(0.18, 0.47, 0.91, 1.00);
+    colors[ig.ImGuiCol_ButtonHovered] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_ButtonActive] = initImVec4(0.22, 0.52, 0.91, 1.00);
+    colors[ig.ImGuiCol_Header] = initImVec4(0.18, 0.47, 0.91, 1.00);
+    colors[ig.ImGuiCol_HeaderHovered] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_HeaderActive] = initImVec4(0.29, 0.66, 0.91, 1.00);
+    colors[ig.ImGuiCol_Separator] = initImVec4(0.22, 0.22, 0.22, 1.00);
+    colors[ig.ImGuiCol_SeparatorHovered] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_SeparatorActive] = initImVec4(0.29, 0.66, 0.91, 1.00);
+    colors[ig.ImGuiCol_ResizeGrip] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_ResizeGripHovered] = initImVec4(0.29, 0.66, 0.91, 1.00);
+    colors[ig.ImGuiCol_ResizeGripActive] = initImVec4(0.29, 0.70, 0.91, 1.00);
+    colors[ig.ImGuiCol_Tab] = initImVec4(0.18, 0.18, 0.18, 1.00);
+    colors[ig.ImGuiCol_TabHovered] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_TabActive] = initImVec4(0.18, 0.47, 0.91, 1.00);
+    colors[ig.ImGuiCol_TabUnfocused] = initImVec4(0.14, 0.14, 0.14, 1.00);
+    colors[ig.ImGuiCol_TabUnfocusedActive] = initImVec4(0.18, 0.47, 0.91, 1.00);
+    colors[ig.ImGuiCol_PlotLines] = initImVec4(0.61, 0.61, 0.61, 1.00);
+    colors[ig.ImGuiCol_PlotLinesHovered] = initImVec4(0.29, 0.66, 0.91, 1.00);
+    colors[ig.ImGuiCol_PlotHistogram] = initImVec4(0.90, 0.70, 0.00, 1.00);
+    colors[ig.ImGuiCol_PlotHistogramHovered] = initImVec4(1.00, 0.60, 0.00, 1.00);
+    colors[ig.ImGuiCol_TableHeaderBg] = initImVec4(0.19, 0.19, 0.19, 1.00);
+    colors[ig.ImGuiCol_TableBorderStrong] = initImVec4(0.31, 0.31, 0.35, 1.00);
+    colors[ig.ImGuiCol_TableBorderLight] = initImVec4(0.23, 0.23, 0.25, 1.00);
+    colors[ig.ImGuiCol_TableRowBg] = initImVec4(0.00, 0.00, 0.00, 0.00);
+    colors[ig.ImGuiCol_TableRowBgAlt] = initImVec4(1.00, 1.00, 1.00, 0.06);
+    colors[ig.ImGuiCol_TextSelectedBg] = initImVec4(0.29, 0.62, 0.91, 0.35);
+    colors[ig.ImGuiCol_DragDropTarget] = initImVec4(0.29, 0.62, 0.91, 0.90);
+    colors[ig.ImGuiCol_NavHighlight] = initImVec4(0.29, 0.62, 0.91, 1.00);
+    colors[ig.ImGuiCol_NavWindowingHighlight] = initImVec4(1.00, 1.00, 1.00, 0.70);
+    colors[ig.ImGuiCol_NavWindowingDimBg] = initImVec4(0.80, 0.80, 0.80, 0.20);
+    colors[ig.ImGuiCol_ModalWindowDimBg] = initImVec4(0.80, 0.80, 0.80, 0.35);
 
     // Style adjustments
     style.*.WindowRounding = 8.0;
@@ -460,11 +461,11 @@ pub fn setMaterialYouTheme() void {
     style.*.GrabRounding = 4.0;
     style.*.ChildRounding = 4.0;
 
-    style.*.WindowTitleAlign = ImVec2(0.50, 0.50);
-    style.*.WindowPadding = ImVec2(10.0, 10.0);
-    style.*.FramePadding = ImVec2(8.0, 4.0);
-    style.*.ItemSpacing = ImVec2(8.0, 8.0);
-    style.*.ItemInnerSpacing = ImVec2(8.0, 6.0);
+    style.*.WindowTitleAlign = initImVec2(0.50, 0.50);
+    style.*.WindowPadding = initImVec2(10.0, 10.0);
+    style.*.FramePadding = initImVec2(8.0, 4.0);
+    style.*.ItemSpacing = initImVec2(8.0, 8.0);
+    style.*.ItemInnerSpacing = initImVec2(8.0, 6.0);
     style.*.IndentSpacing = 22.0;
 
     style.*.ScrollbarSize = 16.0;

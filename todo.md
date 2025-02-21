@@ -79,6 +79,13 @@ VertexBuffer Attributes
 
 imgui utils
 
+grass model
+grass movement
+    * adjustable wind direction
+random color
+random height
+darker based on height
+
 
 make smaller structs that each sub system would use
     - the render takes in a render item (material, transform, mesh)

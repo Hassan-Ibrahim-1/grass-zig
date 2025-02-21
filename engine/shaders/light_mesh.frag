@@ -153,7 +153,7 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 frag_pos, vec3 view_di
     float attenuation = 1.0 / distance;
     // float attenuation = 1.0 / (light.constant + light.linear * distance +
     //     light.quadratic * (distance * distance));
-    ambient *= attenuation;
+    ambient *= attenuation * 3;
     diffuse *= attenuation;
     specular *= attenuation;
     // return specular;
