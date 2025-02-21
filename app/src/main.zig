@@ -112,20 +112,13 @@ fn update() anyerror!void {
             null,
             null,
         );
-        // _ = ig.dragFloatEx(
-        //     "rand lean",
-        //     &rand_lean,
-        //     0.01,
-        //     null,
-        //     null,
-        // );
-        // _ = ig.dragFloatEx(
-        //     "height",
-        //     &height,
-        //     0.01,
-        //     null,
-        //     null,
-        // );
+        _ = ig.dragFloatEx(
+            "rand lean",
+            &rand_lean,
+            0.001,
+            null,
+            null,
+        );
 
         ig.fpsCounter();
     }
@@ -191,7 +184,7 @@ fn renderGrass() void {
 }
 
 fn generateGrass(bounds: *const Bounds) void {
-    const count = 4000;
+    const count = 1000;
     for (0..count) |_| {
         createBlade(bounds);
     }
@@ -209,14 +202,17 @@ fn randInBounds(bounds: *const Bounds) Vec3 {
     );
 }
 
+var rand_lean: f32 = 0.35;
 fn createBlade(bounds: *const Bounds) void {
     grass_blades.append(.{
         .transform = .{
             .position = randInBounds(bounds),
-            .scale = Vec3.init(1, rand.float(f32), 1),
+            .scale = Vec3.init(1, 1.0, 1),
         },
-        .rand_lean = randInRange(0.35, 0.4),
+        .rand_lean = randInRange(0.33, 0.36),
     }) catch unreachable;
+    // 0.39 - 0.44 with z
+    // 0.33 - 3.36 without z
 }
 
 test {
