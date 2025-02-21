@@ -37,21 +37,16 @@ const indices = [_]u32{
     1, 2, 3,
 };
 
-var shader: Shader = undefined;
 var camera: *Camera = undefined;
 var allocator: Allocator = undefined;
 var ground: *Actor = undefined;
 var grass: *Actor = undefined;
 var grass_model: Model = undefined;
 
+var wind_direction = Vec3.init(1.0, 0.0, 0.0);
+
 fn init() anyerror!void {
     allocator = engine.allocator();
-    shader = try Shader.init(
-        engine.allocator(),
-        fs.shaderPath("rect.vert"),
-        fs.shaderPath("rect.frag"),
-    );
-    engine.addShader(&shader);
 
     const scene = engine.scene();
 

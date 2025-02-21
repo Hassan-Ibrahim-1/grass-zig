@@ -200,6 +200,7 @@ fn endFrame() void {
 
 /// added shaders will be reloaded when 'o' is pressed
 /// they will be deinitalized at engine.deinit by renderer
+/// DON'T deinitialize them yourself
 pub fn addShader(shader: *Shader) void {
     state.shaders.append(shader) catch |err| {
         log.err("Failed to append shader: {s}", .{@errorName(err)});
