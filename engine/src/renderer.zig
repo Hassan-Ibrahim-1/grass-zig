@@ -229,7 +229,7 @@ fn sendTextureData(mat: *const Material, shader: *Shader) void {
     }
 }
 
-fn sendLightData(shader: *Shader) void {
+pub fn sendLightData(shader: *Shader) void {
     const scene = engine.scene();
     shader.use();
 

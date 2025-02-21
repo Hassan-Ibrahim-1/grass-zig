@@ -87,7 +87,7 @@ pub fn dragFloatEx(
         if (vmax != null) break :blk vmax.?;
         break :blk std.math.floatMax(f32);
     };
-    ig.ImGui_DragFloatEx(
+    return ig.ImGui_DragFloatEx(
         @ptrCast(name),
         @ptrCast(f),
         speed,

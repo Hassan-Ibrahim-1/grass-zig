@@ -32,7 +32,7 @@ pub fn init(
 }
 
 pub fn mat4(self: *const Transform) Mat4 {
-    var mat = Mat4.identity();
+    var mat = Mat4.identity;
     mat = mat.translate(self.position);
     mat = mat.rotateX(math.toRadians(self.rotation.x));
     mat = mat.rotateY(math.toRadians(self.rotation.y));

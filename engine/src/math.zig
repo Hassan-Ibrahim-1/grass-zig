@@ -66,6 +66,15 @@ pub fn unProject(
 pub const Mat4 = extern struct {
     const ValueType = f32;
 
+    pub const identity = Mat4{
+        .data = [_]ValueType{
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        },
+    };
+
     // Column-major order for GLSL compatibility
     data: [16]ValueType = [_]ValueType{0} ** 16,
 
@@ -73,19 +82,8 @@ pub const Mat4 = extern struct {
         return Mat4{ .data = values };
     }
 
-    pub fn identity() Mat4 {
-        return Mat4{
-            .data = [_]ValueType{
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1,
-            },
-        };
-    }
-
     pub fn mul(self: *const Mat4, other: *const Mat4) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         comptime var i = 0;
         inline while (i < 4) : (i += 1) {
             comptime var j = 0;
@@ -118,7 +116,7 @@ pub const Mat4 = extern struct {
     }
 
     pub fn translate(mat: *const Mat4, vec: Vec3) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         result.data[12] = vec.x;
         result.data[13] = vec.y;
         result.data[14] = vec.z;
@@ -126,7 +124,7 @@ pub const Mat4 = extern struct {
     }
 
     pub fn scale(mat: *const Mat4, vec: Vec3) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         result.data[0] = vec.x;
         result.data[5] = vec.y;
         result.data[10] = vec.z;
@@ -136,7 +134,7 @@ pub const Mat4 = extern struct {
     // rotations are in radians
 
     pub fn rotateX(mat: *const Mat4, angle: ValueType) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         const c = @cos(angle);
         const s = @sin(angle);
         result.data[5] = c;
@@ -147,7 +145,7 @@ pub const Mat4 = extern struct {
     }
 
     pub fn rotateY(mat: *const Mat4, angle: ValueType) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         const c = @cos(angle);
         const s = @sin(angle);
         result.data[0] = c;
@@ -158,7 +156,7 @@ pub const Mat4 = extern struct {
     }
 
     pub fn rotateZ(mat: *const Mat4, angle: ValueType) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         const c = @cos(angle);
         const s = @sin(angle);
         result.data[0] = c;
@@ -181,7 +179,7 @@ pub const Mat4 = extern struct {
     }
 
     pub fn transpose(self: *const Mat4) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         comptime var i = 0;
         inline while (i < 4) : (i += 1) {
             comptime var j = 0;
@@ -221,11 +219,11 @@ pub const Mat4 = extern struct {
     pub fn inverse(self: *const Mat4) Mat4 {
         const det = self.determinant();
         if (@abs(det) < 1e-8) {
-            return Mat4.identity(); // Return identity for near-singular matrices
+            return Mat4.identity; // Return identity for near-singular matrices
         }
 
         const m = self.data;
-        var result = Mat4.identity();
+        var result = Mat4.identity;
 
         result.data[0] =
             m[5] * (m[10] * m[15] - m[11] * m[14]) -
@@ -256,7 +254,7 @@ pub const Mat4 = extern struct {
         far: ValueType,
     ) Mat4 {
         const f = 1.0 / @tan(fov / 2.0);
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         result.data[0] = f / aspect;
         result.data[5] = f;
         result.data[10] = (far + near) / (near - far);
@@ -283,7 +281,7 @@ pub const Mat4 = extern struct {
         near: ValueType,
         far: ValueType,
     ) Mat4 {
-        var result = Mat4.identity();
+        var result = Mat4.identity;
 
         result.data[0] = 2.0 / (right - left);
         result.data[5] = 2.0 / (top - bottom);
@@ -303,7 +301,7 @@ pub const Mat4 = extern struct {
         const s = f.cross(up).normalized();
         const u = s.cross(f);
 
-        var result = Mat4.identity();
+        var result = Mat4.identity;
         result.data[0] = s.x;
         result.data[1] = u.x;
         result.data[2] = -f.x;
@@ -323,7 +321,7 @@ pub const Mat4 = extern struct {
     //         const f = target.sub(eye).normalized();
     //         const s = f.cross(up).normalized();
     //         const u = s.cross(f);
-    //         var result = Mat4.identity();
+    //         var result = Mat4.identity;
     //         result.data[0] = s.x;
     //         result.data[1] = s.y;
     //         result.data[2] = s.z;
@@ -345,22 +343,20 @@ pub const Mat3 = struct {
 
     data: [9]ValueType = [_]ValueType{0} ** 9,
 
+    pub const identity = Mat3{
+        .data = [_]ValueType{
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1,
+        },
+    };
+
     pub fn init(values: [9]ValueType) Mat3 {
         return Mat3{ .data = values };
     }
 
-    pub fn identity() Mat3 {
-        return Mat3{
-            .data = [_]ValueType{
-                1, 0, 0,
-                0, 1, 0,
-                0, 0, 1,
-            },
-        };
-    }
-
     pub fn mul(self: Mat3, other: Mat3) Mat3 {
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         comptime var i = 0;
         inline while (i < 3) : (i += 1) {
             comptime var j = 0;
@@ -386,14 +382,14 @@ pub const Mat3 = struct {
     }
 
     pub fn translate(vec: Vec3) Mat3 {
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         result.data[6] = vec.x;
         result.data[7] = vec.y;
         return result;
     }
 
     pub fn scale(vec: Vec3) Mat3 {
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         result.data[0] = vec.x;
         result.data[4] = vec.y;
         result.data[8] = vec.z;
@@ -401,7 +397,7 @@ pub const Mat3 = struct {
     }
 
     pub fn rotateZ(angle: ValueType) Mat3 {
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         const cos_val = @cos(angle);
         const sin_val = @sin(angle);
         result.data[0] = cos_val;
@@ -412,7 +408,7 @@ pub const Mat3 = struct {
     }
 
     pub fn transpose(self: Mat3) Mat3 {
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         comptime var i = 0;
         inline while (i < 3) : (i += 1) {
             comptime var j = 0;
@@ -433,10 +429,10 @@ pub const Mat3 = struct {
     pub fn inverse(self: Mat3) Mat3 {
         const det = self.determinant();
         if (@abs(det) < 1e-8) {
-            return Mat3.identity();
+            return Mat3.identity;
         }
 
-        var result = Mat3.identity();
+        var result = Mat3.identity;
         const m = self.data;
 
         result.data[0] = (m[4] * m[8] - m[5] * m[7]) / det;
@@ -1186,7 +1182,7 @@ test "Vec4 from Vec3" {
 }
 
 test "Matrix identity" {
-    const id = Mat4.identity();
+    const id = Mat4.identity;
     try expect(id.data[0] == 1);
     try expect(id.data[5] == 1);
     try expect(id.data[10] == 1);
@@ -1194,7 +1190,7 @@ test "Matrix identity" {
 }
 
 test "Matrix translation" {
-    const mat = Mat4.identity();
+    const mat = Mat4.identity;
     const translation = mat.translate(Vec3.init(2, 3, 4));
     try expect(translation.data[12] == 2);
     try expect(translation.data[13] == 3);
@@ -1202,7 +1198,7 @@ test "Matrix translation" {
 }
 
 test "Matrix scale" {
-    const mat = Mat4.identity();
+    const mat = Mat4.identity;
     const scaling = mat.scale(Vec3.init(2, 3, 4));
     try expect(scaling.data[0] == 2);
     try expect(scaling.data[5] == 3);
@@ -1210,35 +1206,35 @@ test "Matrix scale" {
 }
 
 test "Matrix rotation X" {
-    const mat = Mat4.identity();
+    const mat = Mat4.identity;
     const rot_x = mat.rotateX(std.math.pi / 2.0);
     try expectApproxEq(rot_x.data[5], 0, 0.001);
     try expectApproxEq(rot_x.data[6], 1, 0.001);
 }
 
 test "Matrix rotation Y" {
-    const mat = Mat4.identity();
+    const mat = Mat4.identity;
     const rot_y = mat.rotateY(std.math.pi / 2.0);
     try expectApproxEq(rot_y.data[0], 0, 0.001);
     try expectApproxEq(rot_y.data[10], 0, 0.001);
 }
 
 test "Matrix multiplication" {
-    const a = Mat4.identity();
-    const b = Mat4.identity();
+    const a = Mat4.identity;
+    const b = Mat4.identity;
     const result = a.mul(&b);
     try expect(std.mem.eql(f32, &result.data, &a.data));
 }
 
 test "Matrix transpose" {
-    var original = Mat4.identity();
+    var original = Mat4.identity;
     original.data[1] = 5;
     const transposed = original.transpose();
     try expect(transposed.data[4] == 5);
 }
 
 test "Matrix determinant" {
-    const id = Mat4.identity();
+    const id = Mat4.identity;
     try expect(id.determinant() == 1);
 }
 
@@ -1260,7 +1256,7 @@ test "Matrix look at" {
 }
 
 test "Mat3 identity" {
-    const id = Mat3.identity();
+    const id = Mat3.identity;
     try expect(id.data[0] == 1);
     try expect(id.data[4] == 1);
     try expect(id.data[8] == 1);
@@ -1287,26 +1283,26 @@ test "Mat3 rotation Z" {
 }
 
 test "Mat3 multiplication" {
-    const a = Mat3.identity();
-    const b = Mat3.identity();
+    const a = Mat3.identity;
+    const b = Mat3.identity;
     const result = a.mul(b);
     try expect(std.mem.eql(f32, &result.data, &a.data));
 }
 
 test "Mat3 transpose" {
-    var original = Mat3.identity();
+    var original = Mat3.identity;
     original.data[1] = 5;
     const transposed = original.transpose();
     try expect(transposed.data[3] == 5);
 }
 
 test "Mat3 determinant" {
-    const id = Mat3.identity();
+    const id = Mat3.identity;
     try expect(id.determinant() == 1);
 }
 
 test "Mat3 inverse" {
-    const id = Mat3.identity();
+    const id = Mat3.identity;
     const inv = id.inverse();
     try expect(std.mem.eql(f32, &inv.data, &id.data));
 }

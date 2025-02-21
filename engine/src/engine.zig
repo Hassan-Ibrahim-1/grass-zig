@@ -153,6 +153,10 @@ pub fn deltaTime() f32 {
     return state.delta_time;
 }
 
+pub fn time() f32 {
+    return @floatCast(glfw.glfwGetTime());
+}
+
 pub fn camera() *Camera {
     return &state.camera;
 }
@@ -200,7 +204,7 @@ fn endFrame() void {
 
 /// added shaders will be reloaded when 'o' is pressed
 /// they will be deinitalized at engine.deinit by renderer
-/// DON'T deinitialize them yourself
+/// DON'T deinitialize the shader yourself
 pub fn addShader(shader: *Shader) void {
     state.shaders.append(shader) catch |err| {
         log.err("Failed to append shader: {s}", .{@errorName(err)});

@@ -438,8 +438,8 @@ fn mouseMovementCallback(
     const w = Vec3.init(@floatCast(posx), @floatCast(posy), 0);
     const real_pos = math.unProject(
         w,
-        &Mat4.identity(),
-        &Mat4.identity(),
+        &Mat4.identity,
+        &Mat4.identity,
         viewport,
     );
     mouse_pos.x = real_pos.x;
