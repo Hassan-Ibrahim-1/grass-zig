@@ -81,11 +81,14 @@ imgui utils
 
 -- grass model
 -- grass rotation
--- random rotation based on x axis
-perlin noise to clump grass together.
-use this to generate random positions
-color gradient based on height
 -- random height
+-- random rotation based on y axis
+
+color gradient based on height
+
+perlin noise to clump grass together.
+- use this to generate random positions
+
 instancing
 grass movement
     * adjustable wind direction

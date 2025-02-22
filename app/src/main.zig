@@ -23,6 +23,7 @@ const Texture = engine.Texture;
 const Actor = engine.Actor;
 const Model = engine.Model;
 const ig = engine.ig;
+const math = engine.math;
 const Allocator = std.mem.Allocator;
 
 const ArrayList = std.ArrayList;
@@ -177,14 +178,20 @@ fn renderGrass() void {
         );
         grass_shader.setMat4("rotation", &grass_rot);
         grass_shader.setMat4("model", &model);
-        const grass_color = Color.init(83, 179, 14).clampedVec3();
-        grass_shader.setVec3("material.color", grass_color);
+        const grass_color_max = Color.init(83, 179, 14).clampedVec3();
+        const grass_color_min = Color.init(178, 212, 44).clampedVec3();
+        const color = Vec3.lerp(
+            grass_color_max,
+            grass_color_min,
+            blade.transform.scale.y,
+        );
+        grass_shader.setVec3("material.color", color);
         renderer.renderMesh(&grass_model.meshes.items[0]);
     }
 }
 
 fn generateGrass(bounds: *const Bounds) void {
-    const count = 1000;
+    const count = 4000;
     for (0..count) |_| {
         createBlade(bounds);
     }
@@ -207,7 +214,7 @@ fn createBlade(bounds: *const Bounds) void {
     grass_blades.append(.{
         .transform = .{
             .position = randInBounds(bounds),
-            .scale = Vec3.init(1, 1.0, 1),
+            .scale = Vec3.init(1, randInRange(0.5, 1.0), 1),
             .rotation = Vec3.init(0, randInRange(-45, 45), 0),
         },
         .rand_lean = randInRange(0.33, 0.36),

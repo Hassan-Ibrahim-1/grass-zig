@@ -743,6 +743,15 @@ pub const Vec3 = extern struct {
         };
     }
 
+    pub fn lerp(a: Vec3, b: Vec3, t0: f32) Vec3 {
+        const t = std.math.clamp(t0, 0, 1.0);
+        return Vec3.init(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t,
+        );
+    }
+
     pub fn normalized(self: Vec3) Vec3 {
         return self.divValue(self.length());
     }
