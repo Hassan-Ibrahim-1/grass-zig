@@ -200,13 +200,19 @@ fn createBlade(bounds: *const Bounds) void {
 }
 
 fn randInBounds(bounds: *const Bounds) Vec3 {
-    const point = Vec2.init(
-        math.randomF32(bounds.x, bounds.x + bounds.width),
-        math.randomF32(bounds.y, bounds.y + bounds.height),
-    );
-    const normalizedX = 2.0 * (point.x / 1280) - 1.0;
-    const normalizedY = 2.0 * (point.y / 720) - 1.0;
-    return Vec3.init(normalizedX, 0, normalizedY);
+    _ = bounds; // autofix
+    // const point = Vec2.init(
+    //     math.randomF32(bounds.x, bounds.x + bounds.width),
+    //     math.randomF32(bounds.y, bounds.y + bounds.height),
+    // );
+    // const normalizedX = 2.0 * (point.x / 1280) - 1.0;
+    // const normalizedY = 2.0 * (point.y / 720) - 1.0;
+    // const noise = math.Noise.perlin(normalizedX, normalizedY, 0);
+    // return Vec3.init(
+    //     point.x * noise * 100,
+    //     0,
+    //     point.y * noise * 100,
+    // );
 }
 
 test {
