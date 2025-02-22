@@ -1,6 +1,9 @@
 const std = @import("std");
 const RandGen = std.rand.DefaultPrng;
-var rand = RandGen.init(0);
+pub var rand = RandGen.init(0);
+const c = @cImport({
+    @cInclude("stb_perlin.h");
+});
 
 pub const pi = std.math.pi;
 pub const infinity = std.math.floatMax(f32);
@@ -33,6 +36,28 @@ pub fn randomF32Clamped() f32 {
 pub fn randomF32(min: f32, max: f32) f32 {
     return min + (max - min) * randomF32Clamped();
 }
+
+pub const Noise = struct {
+    pub fn perlin(x: f32, y: f32, z: f32) f32 {
+        return c.stb_perlin_noise3(x, y, z, 0, 0, 0);
+    }
+
+    // look at stb_perlin.h's documentation on the next three noise functions
+    // for explanations on how the last few parameters work
+    // just using the defualt suggested values for now
+
+    pub fn fbm(x: f32, y: f32, z: f32) f32 {
+        return c.stb_perlin_fbm_noise3(x, y, z, 2.0, 0.5, 6);
+    }
+
+    pub fn ridge(x: f32, y: f32, z: f32) f32 {
+        return c.stb_perlin_ridge_noise3(x, y, z, 2.0, 0.5, 6);
+    }
+
+    pub fn turbulence(x: f32, y: f32, z: f32) f32 {
+        return c.stb_perlin_turbulence_noise3(x, y, z, 2.0, 0.5, 6);
+    }
+};
 
 // vec4 v;
 //
@@ -135,34 +160,34 @@ pub const Mat4 = extern struct {
 
     pub fn rotateX(mat: *const Mat4, angle: ValueType) Mat4 {
         var result = Mat4.identity;
-        const c = @cos(angle);
+        const cs = @cos(angle);
         const s = @sin(angle);
-        result.data[5] = c;
+        result.data[5] = cs;
         result.data[6] = s;
         result.data[9] = -s;
-        result.data[10] = c;
+        result.data[10] = cs;
         return mat.mul(&result);
     }
 
     pub fn rotateY(mat: *const Mat4, angle: ValueType) Mat4 {
         var result = Mat4.identity;
-        const c = @cos(angle);
+        const cs = @cos(angle);
         const s = @sin(angle);
-        result.data[0] = c;
+        result.data[0] = cs;
         result.data[2] = -s;
         result.data[8] = s;
-        result.data[10] = c;
+        result.data[10] = cs;
         return mat.mul(&result);
     }
 
     pub fn rotateZ(mat: *const Mat4, angle: ValueType) Mat4 {
         var result = Mat4.identity;
-        const c = @cos(angle);
+        const cs = @cos(angle);
         const s = @sin(angle);
-        result.data[0] = c;
+        result.data[0] = cs;
         result.data[1] = s;
         result.data[4] = -s;
-        result.data[5] = c;
+        result.data[5] = cs;
         return mat.mul(&result);
     }
 

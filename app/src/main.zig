@@ -50,7 +50,7 @@ var grass_blades: ArrayList(GrassBlade) = undefined;
 
 var wind_direction = Vec3.init(1.0, 0.0, 0.0);
 
-var rand: std.Random = undefined;
+var rand: std.Random.Xoshiro256 = undefined;
 var scene: *engine.Scene = undefined;
 
 fn init() anyerror!void {
@@ -68,12 +68,7 @@ fn init() anyerror!void {
         .scale = Vec3.init(14.3, 1.0, 13.3),
     };
 
-    var prng = std.rand.DefaultPrng.init(blk: {
-        var seed: u64 = undefined;
-        try std.posix.getrandom(std.mem.asBytes(&seed));
-        break :blk seed;
-    });
-    rand = prng.random();
+    rand = math.rand;
 
     grass_blades = ArrayList(GrassBlade).init(allocator);
     grass_model = Model.init(allocator, fs.modelPath("grass.glb"));
@@ -197,15 +192,25 @@ fn generateGrass(bounds: *const Bounds) void {
     }
 }
 
-fn randInRange(min: f32, max: f32) f32 {
-    return min + (max - min) * rand.float(f32);
-}
-
 fn randInBounds(bounds: *const Bounds) Vec3 {
     return Vec3.init(
-        randInRange(bounds.x, bounds.x + bounds.width),
+        math.randomF32(
+            bounds.x,
+            bounds.x + bounds.width,
+        ) * math.Noise.fbm(
+            bounds.x,
+            bounds.x + bounds.width,
+            0.0,
+        ),
         0.0,
-        randInRange(bounds.y, bounds.y + bounds.height),
+        math.randomF32(
+            bounds.y,
+            bounds.y + bounds.height,
+        ) * math.Noise.fbm(
+            bounds.y,
+            bounds.y + bounds.height,
+            0.0,
+        ),
     );
 }
 
@@ -214,10 +219,10 @@ fn createBlade(bounds: *const Bounds) void {
     grass_blades.append(.{
         .transform = .{
             .position = randInBounds(bounds),
-            .scale = Vec3.init(1, randInRange(0.5, 1.0), 1),
-            .rotation = Vec3.init(0, randInRange(-45, 45), 0),
+            .scale = Vec3.init(1, math.randomF32(0.5, 1.0), 1),
+            .rotation = Vec3.init(0, math.randomF32(-45, 45), 0),
         },
-        .rand_lean = randInRange(0.33, 0.36),
+        .rand_lean = math.randomF32(0.33, 0.36),
     }) catch unreachable;
     // rand lean values:
     // 0.39 - 0.44 with z

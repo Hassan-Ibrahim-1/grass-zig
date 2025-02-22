@@ -84,7 +84,7 @@ imgui utils
 -- random height
 -- random rotation based on y axis
 
-color gradient based on height
+-- color gradient based on height
 
 perlin noise to clump grass together.
 - use this to generate random positions
