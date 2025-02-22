@@ -285,17 +285,44 @@ pub fn renderMesh(mesh: *const Mesh) void {
     defer mesh.vertex_buffer.unbind();
     switch (dc.type) {
         .draw_arrays => {
-            gl.DrawArrays(mode, 0, @intCast(dc.vertex_count));
-        },
-        .draw_elements => {
-            gl.DrawElements(mode, @intCast(dc.vertex_count), gl.UNSIGNED_INT, 0);
-        },
-        else => {
-            log.err(
-                "draw command type {s} not supported",
-                .{@tagName(dc.type)},
+            gl.DrawArrays(
+                mode,
+                0,
+                @intCast(dc.vertex_count),
             );
         },
+        .draw_elements => {
+            gl.DrawElements(
+                mode,
+                @intCast(dc.vertex_count),
+                gl.UNSIGNED_INT,
+                0,
+            );
+        },
+        .draw_arrays_instanced => {
+            gl.DrawArraysInstanced(
+                mode,
+                0,
+                @intCast(dc.vertex_count),
+                @intCast(dc.instance_count),
+            );
+        },
+        .draw_elements_instanced => {
+            gl.DrawElementsInstanced(
+                mode,
+                @intCast(dc.vertex_count),
+                gl.UNSIGNED_INT,
+                null,
+                @intCast(dc.instance_count),
+            );
+        },
+
+        // else => {
+        //     log.err(
+        //         "draw command type {s} not supported",
+        //         .{@tagName(dc.type)},
+        //     );
+        // },
     }
 }
 
