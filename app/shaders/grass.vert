@@ -18,7 +18,7 @@ void main() {
     if (a_position.y > 0.0) {
         pos = a_rotation * pos;
     }
-    gl_Position = projection * view * a_model * pos;
+    gl_Position = projection * view *  pos;
     frag_pos = vec3(a_model * pos);
     mat3 inverse_model = mat3(a_inverse_model);
     normal = normalize(inverse_model * a_normal);

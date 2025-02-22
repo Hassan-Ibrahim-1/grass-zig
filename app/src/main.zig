@@ -28,11 +28,11 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
 const GrassData = struct {
-    count: usize = 10,
+    count: usize = 1,
 
     model: Model = undefined,
     // for instancing
-    vbo: c_uint = 0,
+    instance_vbo: c_uint = 0,
     blades: ArrayList(GrassBlade) = undefined,
     shader: Shader = undefined,
     /// contain the following matrices in the specified order
@@ -71,6 +71,7 @@ fn init() anyerror!void {
     grass_data.blades = ArrayList(GrassBlade).init(allocator);
     grass_data.matrices = ArrayList(Mat4).init(allocator);
     grass_data.model = Model.init(allocator, fs.modelPath("grass.glb"));
+
     generateGrass(&.{
         .x = -4,
         .width = 6,
@@ -152,17 +153,16 @@ const Bounds = struct {
 
 fn renderGrass() void {
     renderer.sendLightData(&grass_data.shader);
-    for (grass_data.blades.items) |*blade| {
-        const grass_color_max = Color.init(83, 179, 14).clampedVec3();
-        const grass_color_min = Color.init(178, 212, 44).clampedVec3();
-        const color = Vec3.lerp(
-            grass_color_max,
-            grass_color_min,
-            blade.height,
-        );
-        grass_data.shader.setVec3("material.color", color);
-        renderer.renderMesh(&grass_data.model.meshes.items[0]);
-    }
+    renderer.renderMesh(&grass_data.model.meshes.items[0]);
+
+    // const grass_color_max = Color.init(83, 179, 14).clampedVec3();
+    // const grass_color_min = Color.init(178, 212, 44).clampedVec3();
+    // const color = Vec3.lerp(
+    //     grass_color_max,
+    //     grass_color_min,
+    //     blade.height,
+    // );
+    // grass_data.shader.setVec3("material.color", color);
 }
 
 fn sendGrassData() void {
@@ -170,12 +170,12 @@ fn sendGrassData() void {
     vb.bind();
     defer vb.unbind();
 
-    gl.GenBuffers(1, @ptrCast(&grass_data.vbo));
-    gl.BindBuffer(gl.ARRAY_BUFFER, grass_data.vbo);
+    gl.GenBuffers(1, @ptrCast(&grass_data.instance_vbo));
+    gl.BindBuffer(gl.ARRAY_BUFFER, grass_data.instance_vbo);
     gl.BufferData(
         gl.ARRAY_BUFFER,
         2 * @as(isize, @intCast(grass_data.count)) * @sizeOf(Mat4),
-        @ptrCast(&grass_data.matrices.items[0]),
+        @ptrCast(grass_data.matrices.items),
         gl.STATIC_DRAW,
     );
 
@@ -211,15 +211,15 @@ fn sendGrassData() void {
     gl.VertexAttribDivisor(8, 1);
     gl.VertexAttribDivisor(9, 1);
     gl.VertexAttribDivisor(10, 1);
-    gl.EnableVertexAttribArray(7);
 
     // a_rotation binds to 11, 12, 13, 14
+    gl.EnableVertexAttribArray(11);
     gl.VertexAttribPointer(11, 4, gl.FLOAT, gl.FALSE, stride, 8 * v4s);
-    gl.EnableVertexAttribArray(8);
+    gl.EnableVertexAttribArray(12);
     gl.VertexAttribPointer(12, 4, gl.FLOAT, gl.FALSE, stride, 9 * v4s);
-    gl.EnableVertexAttribArray(9);
+    gl.EnableVertexAttribArray(13);
     gl.VertexAttribPointer(13, 4, gl.FLOAT, gl.FALSE, stride, 10 * v4s);
-    gl.EnableVertexAttribArray(10);
+    gl.EnableVertexAttribArray(14);
     gl.VertexAttribPointer(14, 4, gl.FLOAT, gl.FALSE, stride, 11 * v4s);
 
     gl.VertexAttribDivisor(11, 1);
@@ -248,7 +248,7 @@ fn createBlade(bounds: *const Bounds) void {
 
     const curve_amount: f32 = rand_lean * tf.scale.y;
     const grass_rot = Mat4.identity.rotateX(
-        engine.math.toDegrees(curve_amount),
+        math.toDegrees(curve_amount),
     );
 
     // rand lean values:
