@@ -88,7 +88,7 @@ fn init() anyerror!void {
     grass_shader = Shader.init(
         allocator,
         "shaders/grass.vert",
-        fs.shaderPath("light_mesh.frag"),
+        "shaders/grass.frag",
     ) catch unreachable;
     engine.addShader(&grass_shader);
     // grass.render_item.material.shader = &grass_shader;
@@ -208,9 +208,11 @@ fn createBlade(bounds: *const Bounds) void {
         .transform = .{
             .position = randInBounds(bounds),
             .scale = Vec3.init(1, 1.0, 1),
+            .rotation = Vec3.init(0, randInRange(-45, 45), 0),
         },
         .rand_lean = randInRange(0.33, 0.36),
     }) catch unreachable;
+    // rand lean values:
     // 0.39 - 0.44 with z
     // 0.33 - 3.36 without z
 }

@@ -80,11 +80,16 @@ VertexBuffer Attributes
 imgui utils
 
 -- grass model
+-- grass rotation
+-- random rotation based on x axis
+perlin noise to clump grass together.
+use this to generate random positions
+color gradient based on height
+-- random height
+instancing
 grass movement
     * adjustable wind direction
-random color
-random height
-darker based on height
+player character
 
 
 make smaller structs that each sub system would use
