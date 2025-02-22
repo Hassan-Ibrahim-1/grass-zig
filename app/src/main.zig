@@ -200,7 +200,12 @@ fn createBlade(bounds: *const Bounds) void {
 }
 
 fn randInBounds(bounds: *const Bounds) Vec3 {
-    _ = bounds; // autofix
+    return Vec3.init(
+        math.randomF32(bounds.x, bounds.x + bounds.width),
+        0.0,
+        math.randomF32(bounds.y, bounds.y + bounds.height),
+    );
+    //
     // const point = Vec2.init(
     //     math.randomF32(bounds.x, bounds.x + bounds.width),
     //     math.randomF32(bounds.y, bounds.y + bounds.height),
