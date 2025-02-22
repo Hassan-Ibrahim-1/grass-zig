@@ -38,6 +38,7 @@ pub fn randomF32(min: f32, max: f32) f32 {
 }
 
 pub const Noise = struct {
+    /// all values must be between -1 and 1
     pub fn perlin(x: f32, y: f32, z: f32) f32 {
         return c.stb_perlin_noise3(x, y, z, 0, 0, 0);
     }
@@ -46,14 +47,17 @@ pub const Noise = struct {
     // for explanations on how the last few parameters work
     // just using the defualt suggested values for now
 
+    /// all values must be between -1 and 1
     pub fn fbm(x: f32, y: f32, z: f32) f32 {
         return c.stb_perlin_fbm_noise3(x, y, z, 2.0, 0.5, 6);
     }
 
+    /// all values must be between -1 and 1
     pub fn ridge(x: f32, y: f32, z: f32) f32 {
         return c.stb_perlin_ridge_noise3(x, y, z, 2.0, 0.5, 6);
     }
 
+    /// all values must be between -1 and 1
     pub fn turbulence(x: f32, y: f32, z: f32) f32 {
         return c.stb_perlin_turbulence_noise3(x, y, z, 2.0, 0.5, 6);
     }
@@ -855,7 +859,7 @@ pub const Vec3 = extern struct {
 pub const Vec2 = extern struct {
     const ValueType = f32;
 
-    pub const zero = init(0.0, 0.0);
+    pub const zero = Vec2.init(0.0, 0.0);
 
     x: ValueType = 0.0,
     y: ValueType = 0.0,

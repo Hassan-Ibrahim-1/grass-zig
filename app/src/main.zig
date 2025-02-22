@@ -108,13 +108,6 @@ fn update() anyerror!void {
             null,
             null,
         );
-        _ = ig.dragFloatEx(
-            "rand lean",
-            &rand_lean,
-            0.001,
-            null,
-            null,
-        );
 
         ig.fpsCounter();
     }
@@ -192,29 +185,6 @@ fn generateGrass(bounds: *const Bounds) void {
     }
 }
 
-fn randInBounds(bounds: *const Bounds) Vec3 {
-    return Vec3.init(
-        math.randomF32(
-            bounds.x,
-            bounds.x + bounds.width,
-        ) * math.Noise.fbm(
-            bounds.x,
-            bounds.x + bounds.width,
-            0.0,
-        ),
-        0.0,
-        math.randomF32(
-            bounds.y,
-            bounds.y + bounds.height,
-        ) * math.Noise.fbm(
-            bounds.y,
-            bounds.y + bounds.height,
-            0.0,
-        ),
-    );
-}
-
-var rand_lean: f32 = 0.35;
 fn createBlade(bounds: *const Bounds) void {
     grass_blades.append(.{
         .transform = .{
@@ -227,6 +197,16 @@ fn createBlade(bounds: *const Bounds) void {
     // rand lean values:
     // 0.39 - 0.44 with z
     // 0.33 - 3.36 without z
+}
+
+fn randInBounds(bounds: *const Bounds) Vec3 {
+    const point = Vec2.init(
+        math.randomF32(bounds.x, bounds.x + bounds.width),
+        math.randomF32(bounds.y, bounds.y + bounds.height),
+    );
+    const normalizedX = 2.0 * (point.x / 1280) - 1.0;
+    const normalizedY = 2.0 * (point.y / 720) - 1.0;
+    return Vec3.init(normalizedX, 0, normalizedY);
 }
 
 test {
