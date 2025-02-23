@@ -89,7 +89,6 @@ void main() {
     //     FragColor = vec4(1, 0, 0, 1);
     // }
     // FragColor = vec4(normal, 1.0f);
-
 }
 
 vec3 saturate(vec3 vec) {

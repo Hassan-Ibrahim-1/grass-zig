@@ -248,9 +248,11 @@ fn generateGrass(bounds: *const Bounds) void {
 }
 
 fn createBlade(bounds: *const Bounds) void {
+    const min_height = 0.5;
+    const max_height = 1.0;
     const tf = Transform{
         .position = bounds.randF32(),
-        .scale = Vec3.init(1, math.randomF32(0.5, 1.0), 1),
+        .scale = Vec3.init(1, math.randomF32(min_height, max_height), 1),
         .rotation = Vec3.init(0, math.randomF32(-45, 45), 0),
     };
     const rand_lean = math.randomF32(0.33, 0.36);
@@ -285,8 +287,14 @@ fn createBlade(bounds: *const Bounds) void {
         grass_color_min,
         tf.scale.y,
     );
+    // const percent_height: f32 = (tf.scale.y - min_height) / max_height;
     grass_data.gpu_data.append(
-        Vec4.init(color.x, color.y, color.z, 1.0),
+        Vec4.init(
+            color.x,
+            color.y,
+            color.z,
+            tf.scale.y,
+        ),
     ) catch unreachable;
 }
 
