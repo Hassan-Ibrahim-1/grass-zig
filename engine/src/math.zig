@@ -1,5 +1,7 @@
 const std = @import("std");
 const RandGen = std.rand.DefaultPrng;
+const engine = @import("engine.zig");
+const Transform = engine.Transform;
 pub var rand = RandGen.init(0);
 const c = @cImport({
     @cInclude("stb_perlin.h");
@@ -36,6 +38,44 @@ pub fn randomF32Clamped() f32 {
 pub fn randomF32(min: f32, max: f32) f32 {
     return min + (max - min) * randomF32Clamped();
 }
+
+pub const Bounds = struct {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+
+    /// uses z for height and y
+    pub fn fromTransform(tf: *const Transform) Bounds {
+        return Bounds{
+            .x = tf.position.x - (tf.scale.x / 2.0),
+            .y = tf.position.z - (tf.scale.z / 2.0),
+            .width = tf.scale.x,
+            .height = tf.scale.z,
+        };
+    }
+
+    pub fn randF32(bounds: *const Bounds) Vec3 {
+        return Vec3.init(
+            randomF32(bounds.x, bounds.x + bounds.width),
+            0.0,
+            randomF32(bounds.y, bounds.y + bounds.height),
+        );
+        //
+        // const point = Vec2.init(
+        //     math.randomF32(bounds.x, bounds.x + bounds.width),
+        //     math.randomF32(bounds.y, bounds.y + bounds.height),
+        // );
+        // const normalizedX = 2.0 * (point.x / 1280) - 1.0;
+        // const normalizedY = 2.0 * (point.y / 720) - 1.0;
+        // const noise = math.Noise.perlin(normalizedX, normalizedY, 0);
+        // return Vec3.init(
+        //     point.x * noise * 100,
+        //     0,
+        //     point.y * noise * 100,
+        // );
+    }
+};
 
 pub const Noise = struct {
     /// all values must be between -1 and 1

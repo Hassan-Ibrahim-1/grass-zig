@@ -25,9 +25,10 @@ const ig = engine.ig;
 const math = engine.math;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
+const Bounds = math.Bounds;
 
 const GrassData = struct {
-    count: usize = 4000,
+    count: usize = 100_000,
 
     model: Model = undefined,
     // for instancing
@@ -77,6 +78,9 @@ fn init() anyerror!void {
         .y = -4,
         .height = 6,
     });
+    // generateGrass(
+    //     &Bounds.fromTransform(&ground.transform),
+    // );
     log.info("created {} blades of grass", .{grass_data.blades.items.len});
     sendGrassData();
     createGrassDrawCommand();
@@ -119,6 +123,7 @@ fn deinit() void {
     grass_data.model.deinit();
     grass_data.blades.deinit();
     grass_data.gpu_data.deinit();
+    gl.DeleteBuffers(1, @ptrCast(&grass_data.instance_vbo));
 }
 
 pub fn main() !void {
@@ -143,13 +148,6 @@ const GrassBlade = struct {
     rand_lean: f32,
 };
 
-const Bounds = struct {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-};
-
 fn renderGrass() void {
     renderer.sendLightData(&grass_data.shader);
     renderer.renderMesh(&grass_data.model.meshes.items[0]);
@@ -171,16 +169,23 @@ fn sendGrassData() void {
 
     gl.GenBuffers(1, @ptrCast(&grass_data.instance_vbo));
     gl.BindBuffer(gl.ARRAY_BUFFER, grass_data.instance_vbo);
+    engine.debug.checkGlError();
+    engine.debug.checkGlError();
+
+    log.info("before buffer data", .{});
+
+    log.info("bytes: {}", .{
+        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Vec4),
+    });
+
     gl.BufferData(
         gl.ARRAY_BUFFER,
-        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Mat4),
+        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Vec4),
         @ptrCast(grass_data.gpu_data.items),
         gl.STATIC_DRAW,
     );
 
-    log.info("bytes: {}", .{
-        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Mat4),
-    });
+    log.info("after buffer data", .{});
 
     const v4s = @sizeOf(Vec4);
     const stride = 13 * v4s;
@@ -244,7 +249,7 @@ fn generateGrass(bounds: *const Bounds) void {
 
 fn createBlade(bounds: *const Bounds) void {
     const tf = Transform{
-        .position = randInBounds(bounds),
+        .position = bounds.randF32(),
         .scale = Vec3.init(1, math.randomF32(0.5, 1.0), 1),
         .rotation = Vec3.init(0, math.randomF32(-45, 45), 0),
     };
@@ -292,27 +297,6 @@ fn createGrassDrawCommand() void {
     dc.type = .draw_elements_instanced;
     dc.vertex_count = mesh.vertex_buffer.indices.items.len;
     dc.instance_count = grass_data.count;
-}
-
-fn randInBounds(bounds: *const Bounds) Vec3 {
-    return Vec3.init(
-        math.randomF32(bounds.x, bounds.x + bounds.width),
-        0.0,
-        math.randomF32(bounds.y, bounds.y + bounds.height),
-    );
-    //
-    // const point = Vec2.init(
-    //     math.randomF32(bounds.x, bounds.x + bounds.width),
-    //     math.randomF32(bounds.y, bounds.y + bounds.height),
-    // );
-    // const normalizedX = 2.0 * (point.x / 1280) - 1.0;
-    // const normalizedY = 2.0 * (point.y / 720) - 1.0;
-    // const noise = math.Noise.perlin(normalizedX, normalizedY, 0);
-    // return Vec3.init(
-    //     point.x * noise * 100,
-    //     0,
-    //     point.y * noise * 100,
-    // );
 }
 
 test {
