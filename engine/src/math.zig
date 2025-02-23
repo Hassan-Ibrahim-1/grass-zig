@@ -48,10 +48,10 @@ pub const Bounds = struct {
     /// uses z for height and y
     pub fn fromTransform(tf: *const Transform) Bounds {
         return Bounds{
-            .x = tf.position.x - (tf.scale.x / 2.0),
-            .y = tf.position.z - (tf.scale.z / 2.0),
-            .width = tf.scale.x,
-            .height = tf.scale.z,
+            .x = tf.position.x - (tf.scale.x),
+            .y = tf.position.z - (tf.scale.z),
+            .width = tf.scale.x * 2.0,
+            .height = tf.scale.z * 2.0,
         };
     }
 

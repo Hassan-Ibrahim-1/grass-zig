@@ -28,7 +28,7 @@ const ArrayList = std.ArrayList;
 const Bounds = math.Bounds;
 
 const GrassData = struct {
-    count: usize = 100_000,
+    count: usize = 500_000,
 
     model: Model = undefined,
     // for instancing
@@ -72,15 +72,15 @@ fn init() anyerror!void {
     grass_data.gpu_data = ArrayList(Vec4).init(allocator);
     grass_data.model = Model.init(allocator, fs.modelPath("grass.glb"));
 
-    generateGrass(&.{
-        .x = -4,
-        .width = 6,
-        .y = -4,
-        .height = 6,
-    });
-    // generateGrass(
-    //     &Bounds.fromTransform(&ground.transform),
-    // );
+    // generateGrass(&.{
+    //     .x = -4,
+    //     .width = 6,
+    //     .y = -4,
+    //     .height = 6,
+    // });
+    generateGrass(
+        &Bounds.fromTransform(&ground.transform),
+    );
     log.info("created {} blades of grass", .{grass_data.blades.items.len});
     sendGrassData();
     createGrassDrawCommand();
