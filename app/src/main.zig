@@ -28,7 +28,7 @@ const ArrayList = std.ArrayList;
 const Bounds = math.Bounds;
 
 const GrassData = struct {
-    count: usize = 100_000,
+    count: usize = 1_000_000,
 
     model: Model = undefined,
     // for instancing
