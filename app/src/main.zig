@@ -128,8 +128,8 @@ fn deinit() void {
 
 pub fn main() !void {
     try engine.init(&.{
-        .width = 1920,
-        .height = 1080,
+        .width = 1280,
+        .height = 720,
         .name = "App",
     });
     defer engine.deinit();
@@ -150,6 +150,7 @@ const GrassBlade = struct {
 
 fn renderGrass() void {
     renderer.sendLightData(&grass_data.shader);
+    grass_data.shader.setFloat("time", engine.time());
     renderer.renderMesh(&grass_data.model.meshes.items[0]);
 
     // const grass_color_max = Color.init(83, 179, 14).clampedVec3();
