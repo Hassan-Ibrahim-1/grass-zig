@@ -16,28 +16,26 @@ out float vertex_height;
 
 uniform mat4 projection;
 uniform mat4 view;
-uniform float time;
+// uniform float time;
 
-const float offset = 0.1;
-
-float random2d(vec2 coord) {
-    return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
-}
+// float random2d(vec2 coord) {
+//     return fract(sin(dot(coord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+// }
 
 void main() {
     vec4 pos =  vec4(a_position, 1.0);
     if (a_position.y > 0.0) {
         pos = a_rotation * pos;
     }
-    if (a_position.y > 0.2) {
-        const float mult = 0.01;
-        float rand = random2d(a_position.xy);
-        float offset = mult * sin(time) - (a_position.x * 0.1 + rand * 0.1);
-        // if (a_position.y == 1.0f) {
-        //     offset = ((offset + 0.5) + (offset - 0.5));
-        // }
-        pos.x += offset * 0.7;
-    }
+    // if (a_position.y > 0.2) {
+    //     const float mult = 0.01;
+    //     float rand = random2d(a_position.xy);
+    //     float offset = mult * sin(time) - (a_position.x * 0.1 + rand * 0.1);
+    //     // if (a_position.y == 1.0f) {
+    //     //     offset = ((offset + 0.5) + (offset - 0.5));
+    //     // }
+    //     pos.x += offset * 0.7;
+    // }
 
     gl_Position = projection * view * a_model * pos;
     frag_pos = vec3(a_model * pos);

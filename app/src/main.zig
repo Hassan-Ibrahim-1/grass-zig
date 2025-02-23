@@ -150,7 +150,7 @@ const GrassBlade = struct {
 
 fn renderGrass() void {
     renderer.sendLightData(&grass_data.shader);
-    grass_data.shader.setFloat("time", engine.time());
+    // grass_data.shader.setFloat("time", engine.time());
     renderer.renderMesh(&grass_data.model.meshes.items[0]);
 
     // const grass_color_max = Color.init(83, 179, 14).clampedVec3();
