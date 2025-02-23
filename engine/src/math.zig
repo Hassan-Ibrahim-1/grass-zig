@@ -111,6 +111,15 @@ pub const Mat4 = extern struct {
         return Mat4{ .data = values };
     }
 
+    pub fn asVec4(self: *const Mat4) [4]Vec4 {
+        return .{
+            Vec4.init(self.data[0], self.data[1], self.data[2], self.data[3]),
+            Vec4.init(self.data[4], self.data[5], self.data[6], self.data[7]),
+            Vec4.init(self.data[8], self.data[9], self.data[10], self.data[11]),
+            Vec4.init(self.data[12], self.data[13], self.data[14], self.data[15]),
+        };
+    }
+
     pub fn mul(self: *const Mat4, other: *const Mat4) Mat4 {
         var result = Mat4.identity;
         comptime var i = 0;

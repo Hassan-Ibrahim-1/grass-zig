@@ -16,7 +16,6 @@ const Camera = engine.Camera;
 const VertexBuffer = engine.VertexBuffer;
 const Color = engine.Color;
 const Vertex = engine.Vertex;
-const input = engine.input;
 const Mesh = engine.Mesh;
 const renderer = engine.renderer;
 const Texture = engine.Texture;
@@ -28,7 +27,7 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
 const GrassData = struct {
-    count: usize = 1,
+    count: usize = 4000,
 
     model: Model = undefined,
     // for instancing
@@ -37,7 +36,7 @@ const GrassData = struct {
     shader: Shader = undefined,
     /// contain the following matrices in the specified order
     /// model, inverse_model, rotation
-    matrices: ArrayList(Mat4) = undefined,
+    matrices: ArrayList(Vec4) = undefined,
 };
 
 var grass_data = GrassData{};
@@ -69,7 +68,7 @@ fn init() anyerror!void {
     rand = math.rand;
 
     grass_data.blades = ArrayList(GrassBlade).init(allocator);
-    grass_data.matrices = ArrayList(Mat4).init(allocator);
+    grass_data.matrices = ArrayList(Vec4).init(allocator);
     grass_data.model = Model.init(allocator, fs.modelPath("grass.glb"));
 
     generateGrass(&.{
@@ -174,58 +173,62 @@ fn sendGrassData() void {
     gl.BindBuffer(gl.ARRAY_BUFFER, grass_data.instance_vbo);
     gl.BufferData(
         gl.ARRAY_BUFFER,
-        2 * @as(isize, @intCast(grass_data.count)) * @sizeOf(Mat4),
+        @as(isize, @intCast(grass_data.matrices.items.len)) * @sizeOf(Mat4),
         @ptrCast(grass_data.matrices.items),
         gl.STATIC_DRAW,
     );
+
+    log.info("bytes: {}", .{
+        @as(isize, @intCast(grass_data.matrices.items.len)) * @sizeOf(Mat4),
+    });
 
     const v4s = @sizeOf(Vec4);
     const stride = 12 * v4s;
 
     // Model - binds to 3, 4, 5, 6
+    gl.EnableVertexAttribArray(2);
+    gl.VertexAttribPointer(2, 4, gl.FLOAT, gl.FALSE, stride, 0);
     gl.EnableVertexAttribArray(3);
-    gl.VertexAttribPointer(3, 4, gl.FLOAT, gl.FALSE, stride, 0);
+    gl.VertexAttribPointer(3, 4, gl.FLOAT, gl.FALSE, stride, 1 * v4s);
     gl.EnableVertexAttribArray(4);
-    gl.VertexAttribPointer(4, 4, gl.FLOAT, gl.FALSE, stride, 1 * v4s);
+    gl.VertexAttribPointer(4, 4, gl.FLOAT, gl.FALSE, stride, 2 * v4s);
     gl.EnableVertexAttribArray(5);
-    gl.VertexAttribPointer(5, 4, gl.FLOAT, gl.FALSE, stride, 2 * v4s);
-    gl.EnableVertexAttribArray(6);
-    gl.VertexAttribPointer(6, 4, gl.FLOAT, gl.FALSE, stride, 3 * v4s);
+    gl.VertexAttribPointer(5, 4, gl.FLOAT, gl.FALSE, stride, 3 * v4s);
 
+    gl.VertexAttribDivisor(2, 1);
     gl.VertexAttribDivisor(3, 1);
     gl.VertexAttribDivisor(4, 1);
     gl.VertexAttribDivisor(5, 1);
-    gl.VertexAttribDivisor(6, 1);
 
     // Inverse - binds to 7, 8, 9, 10
+    gl.EnableVertexAttribArray(6);
+    gl.VertexAttribPointer(6, 4, gl.FLOAT, gl.FALSE, stride, 4 * v4s);
     gl.EnableVertexAttribArray(7);
-    gl.VertexAttribPointer(7, 4, gl.FLOAT, gl.FALSE, stride, 4 * v4s);
+    gl.VertexAttribPointer(7, 4, gl.FLOAT, gl.FALSE, stride, 5 * v4s);
     gl.EnableVertexAttribArray(8);
-    gl.VertexAttribPointer(8, 4, gl.FLOAT, gl.FALSE, stride, 5 * v4s);
+    gl.VertexAttribPointer(8, 4, gl.FLOAT, gl.FALSE, stride, 6 * v4s);
     gl.EnableVertexAttribArray(9);
-    gl.VertexAttribPointer(9, 4, gl.FLOAT, gl.FALSE, stride, 6 * v4s);
-    gl.EnableVertexAttribArray(10);
-    gl.VertexAttribPointer(10, 4, gl.FLOAT, gl.FALSE, stride, 7 * v4s);
+    gl.VertexAttribPointer(9, 4, gl.FLOAT, gl.FALSE, stride, 7 * v4s);
 
+    gl.VertexAttribDivisor(6, 1);
     gl.VertexAttribDivisor(7, 1);
     gl.VertexAttribDivisor(8, 1);
     gl.VertexAttribDivisor(9, 1);
-    gl.VertexAttribDivisor(10, 1);
 
     // a_rotation binds to 11, 12, 13, 14
+    gl.EnableVertexAttribArray(10);
+    gl.VertexAttribPointer(10, 4, gl.FLOAT, gl.FALSE, stride, 8 * v4s);
     gl.EnableVertexAttribArray(11);
-    gl.VertexAttribPointer(11, 4, gl.FLOAT, gl.FALSE, stride, 8 * v4s);
+    gl.VertexAttribPointer(11, 4, gl.FLOAT, gl.FALSE, stride, 9 * v4s);
     gl.EnableVertexAttribArray(12);
-    gl.VertexAttribPointer(12, 4, gl.FLOAT, gl.FALSE, stride, 9 * v4s);
+    gl.VertexAttribPointer(12, 4, gl.FLOAT, gl.FALSE, stride, 10 * v4s);
     gl.EnableVertexAttribArray(13);
-    gl.VertexAttribPointer(13, 4, gl.FLOAT, gl.FALSE, stride, 10 * v4s);
-    gl.EnableVertexAttribArray(14);
-    gl.VertexAttribPointer(14, 4, gl.FLOAT, gl.FALSE, stride, 11 * v4s);
+    gl.VertexAttribPointer(13, 4, gl.FLOAT, gl.FALSE, stride, 11 * v4s);
 
+    gl.VertexAttribDivisor(10, 1);
     gl.VertexAttribDivisor(11, 1);
     gl.VertexAttribDivisor(12, 1);
     gl.VertexAttribDivisor(13, 1);
-    gl.VertexAttribDivisor(14, 1);
 }
 
 fn generateGrass(bounds: *const Bounds) void {
@@ -255,9 +258,26 @@ fn createBlade(bounds: *const Bounds) void {
     // 0.39 - 0.44 with z
     // 0.33 - 3.36 without z
 
-    grass_data.matrices.append(tf.mat4()) catch unreachable;
-    grass_data.matrices.append(tf.mat4().inverse().transpose()) catch unreachable;
-    grass_data.matrices.append(grass_rot) catch unreachable;
+    grass_data.matrices.appendSlice(
+        &tf.mat4().asVec4(),
+    ) catch unreachable;
+    grass_data.matrices.appendSlice(
+        &tf.mat4().inverse().transpose().asVec4(),
+    ) catch unreachable;
+    grass_data.matrices.appendSlice(
+        &grass_rot.asVec4(),
+    ) catch unreachable;
+    // color
+    const grass_color_max = Color.init(83, 179, 14).clampedVec3();
+    const grass_color_min = Color.init(178, 212, 44).clampedVec3();
+    const color = Vec3.lerp(
+        grass_color_max,
+        grass_color_min,
+        tf.scale.y,
+    );
+    grass_data.matrices.append(
+        Vec4.init(color.x, color.y, color.z, 1.0),
+    ) catch unreachable;
 }
 
 fn createGrassDrawCommand() void {
