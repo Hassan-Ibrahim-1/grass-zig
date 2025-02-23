@@ -89,7 +89,7 @@ imgui utils
 perlin noise to clump grass together.
 - use this to generate random positions
 
-instancing
+-- instancing
 grass movement
     * adjustable wind direction
 player character
