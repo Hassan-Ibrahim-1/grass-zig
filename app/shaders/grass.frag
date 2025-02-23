@@ -43,6 +43,7 @@ float calc_attenuation(float distance, float radius, float max_intensity, float 
 in vec3 normal;
 in vec3 frag_pos;
 in vec3 color;
+in float vertex_height;
 
 out vec4 FragColor;
 
@@ -79,7 +80,7 @@ void main() {
         result += calc_spot_light(spot_lights[i], normal, frag_pos, view_direction);
     }
 
-    FragColor = vec4(result, 1.0f);
+    FragColor = vec4(result * vertex_height, 1.0f);
 
     // FragColor = vec4(result, 1.0f);
     // if (n_point_lights_used > 0) {

@@ -28,7 +28,7 @@ const ArrayList = std.ArrayList;
 const Bounds = math.Bounds;
 
 const GrassData = struct {
-    count: usize = 500_000,
+    count: usize = 50_000,
 
     model: Model = undefined,
     // for instancing
@@ -280,8 +280,10 @@ fn createBlade(bounds: *const Bounds) void {
         &grass_rot.asVec4(),
     ) catch unreachable;
     // color
-    const grass_color_max = Color.init(83, 179, 14).clampedVec3();
-    const grass_color_min = Color.init(178, 212, 44).clampedVec3();
+    // const grass_color_max = Color.init(83, 179, 14).clampedVec3();
+    // const grass_color_min = Color.init(178, 212, 44).clampedVec3();
+    const grass_color_max = Color.init(89, 245, 47).clampedVec3();
+    const grass_color_min = Color.init(226, 255, 5).clampedVec3();
     const color = Vec3.lerp(
         grass_color_max,
         grass_color_min,
