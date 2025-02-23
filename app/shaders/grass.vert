@@ -4,9 +4,9 @@ layout (location = 0) in vec3 a_position;
 layout (location = 1) in vec3 a_normal;
 
 layout (location = 2) in mat4 a_model;
-layout (location = 7) in mat4 a_inverse_model;
-layout (location = 11) in mat4 a_rotation;
-layout (location = 15) in vec4 a_color;
+layout (location = 6) in mat4 a_inverse_model;
+layout (location = 10) in mat4 a_rotation;
+layout (location = 14) in vec4 a_color;
 
 out vec3 color;
 

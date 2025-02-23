@@ -35,8 +35,8 @@ const GrassData = struct {
     blades: ArrayList(GrassBlade) = undefined,
     shader: Shader = undefined,
     /// contain the following matrices in the specified order
-    /// model, inverse_model, rotation
-    matrices: ArrayList(Vec4) = undefined,
+    /// model, inverse_model, rotation, color
+    gpu_data: ArrayList(Vec4) = undefined,
 };
 
 var grass_data = GrassData{};
@@ -68,7 +68,7 @@ fn init() anyerror!void {
     rand = math.rand;
 
     grass_data.blades = ArrayList(GrassBlade).init(allocator);
-    grass_data.matrices = ArrayList(Vec4).init(allocator);
+    grass_data.gpu_data = ArrayList(Vec4).init(allocator);
     grass_data.model = Model.init(allocator, fs.modelPath("grass.glb"));
 
     generateGrass(&.{
@@ -118,7 +118,7 @@ fn update() anyerror!void {
 fn deinit() void {
     grass_data.model.deinit();
     grass_data.blades.deinit();
-    grass_data.matrices.deinit();
+    grass_data.gpu_data.deinit();
 }
 
 pub fn main() !void {
@@ -173,19 +173,19 @@ fn sendGrassData() void {
     gl.BindBuffer(gl.ARRAY_BUFFER, grass_data.instance_vbo);
     gl.BufferData(
         gl.ARRAY_BUFFER,
-        @as(isize, @intCast(grass_data.matrices.items.len)) * @sizeOf(Mat4),
-        @ptrCast(grass_data.matrices.items),
+        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Mat4),
+        @ptrCast(grass_data.gpu_data.items),
         gl.STATIC_DRAW,
     );
 
     log.info("bytes: {}", .{
-        @as(isize, @intCast(grass_data.matrices.items.len)) * @sizeOf(Mat4),
+        @as(isize, @intCast(grass_data.gpu_data.items.len)) * @sizeOf(Mat4),
     });
 
     const v4s = @sizeOf(Vec4);
-    const stride = 12 * v4s;
+    const stride = 13 * v4s;
 
-    // Model - binds to 3, 4, 5, 6
+    // Model
     gl.EnableVertexAttribArray(2);
     gl.VertexAttribPointer(2, 4, gl.FLOAT, gl.FALSE, stride, 0);
     gl.EnableVertexAttribArray(3);
@@ -200,7 +200,7 @@ fn sendGrassData() void {
     gl.VertexAttribDivisor(4, 1);
     gl.VertexAttribDivisor(5, 1);
 
-    // Inverse - binds to 7, 8, 9, 10
+    // inverse
     gl.EnableVertexAttribArray(6);
     gl.VertexAttribPointer(6, 4, gl.FLOAT, gl.FALSE, stride, 4 * v4s);
     gl.EnableVertexAttribArray(7);
@@ -215,7 +215,7 @@ fn sendGrassData() void {
     gl.VertexAttribDivisor(8, 1);
     gl.VertexAttribDivisor(9, 1);
 
-    // a_rotation binds to 11, 12, 13, 14
+    // rotation
     gl.EnableVertexAttribArray(10);
     gl.VertexAttribPointer(10, 4, gl.FLOAT, gl.FALSE, stride, 8 * v4s);
     gl.EnableVertexAttribArray(11);
@@ -229,6 +229,11 @@ fn sendGrassData() void {
     gl.VertexAttribDivisor(11, 1);
     gl.VertexAttribDivisor(12, 1);
     gl.VertexAttribDivisor(13, 1);
+
+    gl.EnableVertexAttribArray(14);
+    gl.VertexAttribPointer(14, 4, gl.FLOAT, gl.FALSE, stride, 12 * v4s);
+
+    gl.VertexAttribDivisor(14, 1);
 }
 
 fn generateGrass(bounds: *const Bounds) void {
@@ -258,13 +263,13 @@ fn createBlade(bounds: *const Bounds) void {
     // 0.39 - 0.44 with z
     // 0.33 - 3.36 without z
 
-    grass_data.matrices.appendSlice(
+    grass_data.gpu_data.appendSlice(
         &tf.mat4().asVec4(),
     ) catch unreachable;
-    grass_data.matrices.appendSlice(
+    grass_data.gpu_data.appendSlice(
         &tf.mat4().inverse().transpose().asVec4(),
     ) catch unreachable;
-    grass_data.matrices.appendSlice(
+    grass_data.gpu_data.appendSlice(
         &grass_rot.asVec4(),
     ) catch unreachable;
     // color
@@ -275,7 +280,7 @@ fn createBlade(bounds: *const Bounds) void {
         grass_color_min,
         tf.scale.y,
     );
-    grass_data.matrices.append(
+    grass_data.gpu_data.append(
         Vec4.init(color.x, color.y, color.z, 1.0),
     ) catch unreachable;
 }
